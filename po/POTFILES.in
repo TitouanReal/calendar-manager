@@ -1,0 +1,6 @@
+# List of source files containing translatable strings.
+# Please keep this file sorted alphabetically.
+data/io.gitlab.TitouanReal.CalendarManager.desktop.in
+data/io.gitlab.TitouanReal.CalendarManager.metainfo.xml.in
+data/io.gitlab.TitouanReal.CalendarManager.gschema.xml
+src/window.blp

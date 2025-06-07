@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=calendar-manager
+Exec=calendar-manager
+Icon=io.gitlab.TitouanReal.CalendarManager
+Terminal=false
+Type=Application
+Categories=Utility;
+Keywords=GTK;
+StartupNotify=true
+DBusActivatable=true
