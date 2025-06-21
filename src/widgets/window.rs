@@ -1,40 +1,19 @@
-/* window.rs
- *
- * Copyright 2025 Titouan Real
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
 use std::cell::OnceCell;
 
-use adw::{prelude::*, subclass::prelude::*, ActionRow};
-// use gtk::prelude::*;
+use adw::{prelude::*, subclass::prelude::*};
 use gtk::{gio, glib};
 
-use crate::core::{Calendar, Manager};
+use crate::{core::Manager, widgets::CollectionsList};
 
 mod imp {
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/window.ui")]
+    #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/widgets/window.ui")]
     pub struct CalendarManagerWindow {
         manager: OnceCell<Manager>,
         #[template_child]
-        list_box: TemplateChild<gtk::ListBox>,
+        collections_list: TemplateChild<CollectionsList>,
     }
 
     #[glib::object_subclass]
@@ -58,13 +37,8 @@ mod imp {
 
             self.manager.get_or_init(Manager::new);
 
-            let calendar_manager = self.manager();
-            let model = calendar_manager.model();
-            self.list_box.bind_model(Some(model), |calendar| {
-                let row = ActionRow::new();
-                row.set_title(&calendar.clone().downcast::<Calendar>().unwrap().name());
-                row.into()
-            });
+            let manager = self.manager();
+            self.collections_list.set_model(manager.collections());
         }
     }
     impl WidgetImpl for CalendarManagerWindow {}

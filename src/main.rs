@@ -1,32 +1,11 @@
-/* main.rs
- *
- * Copyright 2025 Titouan Real
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
 mod application;
 mod config;
 mod core;
 mod tsparql_utils;
 mod utils;
-mod window;
+mod widgets;
 
 use self::application::CalendarManagerApplication;
-use self::window::CalendarManagerWindow;
 
 use config::{GETTEXT_PACKAGE, LOCALEDIR, PKGDATADIR};
 use gettextrs::{bind_textdomain_codeset, bindtextdomain, textdomain};
@@ -38,8 +17,8 @@ fn main() -> glib::ExitCode {
     // Initialize logger, debug is carried out via debug!, info!, warn! and error!.
     // Default to the INFO level for this crate and WARN for everything else.
     // It can be overridden with the RUST_LOG environment variable.
-    let env_filter =
-        EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("calendar_manager=info,warn"));
+    let env_filter = EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| EnvFilter::new("calendar_manager=info,warn"));
 
     tracing_subscriber::registry()
         .with(fmt::layer().with_filter(env_filter))

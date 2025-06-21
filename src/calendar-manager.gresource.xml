@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/io/gitlab/TitouanReal/CalendarManager">
-    <file preprocess="xml-stripblanks">window.ui</file>
+    <file preprocess="xml-stripblanks">widgets/collection_row.ui</file>
+    <file preprocess="xml-stripblanks">widgets/collections_list.ui</file>
+    <file preprocess="xml-stripblanks">widgets/window.ui</file>
     <file preprocess="xml-stripblanks">gtk/help-overlay.ui</file>
+    <file compressed="true">style.css</file>
   </gresource>
 </gresources>

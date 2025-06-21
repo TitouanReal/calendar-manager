@@ -1,50 +1,24 @@
-/* calendar-manager.rs
- *
- * Copyright 2025 Titouan Real
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
 use std::{
     cell::{OnceCell, RefCell},
     collections::HashMap,
+    sync::{Mutex, MutexGuard},
 };
 
 use adw::subclass::prelude::*;
 use gtk::{
-    gio::{self, ListStore},
+    gio::{self, BusType, DBusProxy, DBusProxyFlags, ListStore},
     glib::{self, clone, Object},
 };
-use tracing::{error, info};
+use tracing::{debug, info, warn};
 use tsparql::{prelude::SparqlCursorExtManual, Notifier, NotifierEvent, SparqlConnection};
 
 use crate::{
-    core::{Calendar, Resource},
+    core::{Calendar, Collection, Resource},
     spawn,
     tsparql_utils::NotifierUtils,
 };
 
 mod imp {
-    use std::sync::{Mutex, MutexGuard};
-
-    use gtk::gio::{BusType, DBusProxy, DBusProxyFlags};
-    use tracing::{debug, warn};
-
-    use crate::core::Provider;
-
     use super::*;
 
     #[derive(Debug, Default)]
@@ -53,7 +27,7 @@ mod imp {
         write_connection: OnceCell<DBusProxy>,
         notifier: OnceCell<tsparql::Notifier>,
         resource_pool: OnceCell<Mutex<HashMap<String, Resource>>>,
-        list_store: OnceCell<ListStore>,
+        collections: OnceCell<ListStore>,
         notifier_handler: RefCell<Option<glib::SignalHandlerId>>,
     }
 
@@ -91,7 +65,7 @@ mod imp {
             self.resource_pool
                 .get_or_init(|| Mutex::new(HashMap::new()));
 
-            self.list_store.get_or_init(ListStore::new::<Calendar>);
+            self.collections.get_or_init(ListStore::new::<Collection>);
 
             spawn!(clone!(
                 #[weak(rename_to = imp)]
@@ -133,10 +107,10 @@ mod imp {
             self.notifier.get().expect("notifier should be initialized")
         }
 
-        pub fn list_store(&self) -> &ListStore {
-            self.list_store
+        pub fn collections(&self) -> &ListStore {
+            self.collections
                 .get()
-                .expect("list store should be initialized")
+                .expect("providers should be initialized")
         }
 
         pub fn resource_pool(&self) -> MutexGuard<'_, HashMap<String, Resource>> {
@@ -148,30 +122,35 @@ mod imp {
         }
 
         fn refresh_resources(&self) {
-            let provider_cursor = self
+            let collection_cursor = self
                 .read_connection()
                 .query(
-                    "SELECT ?provider ?provider_name
+                    "SELECT ?collection ?collection_name
                     FROM ccm:Calendar
                     WHERE {
-                        ?provider a ccm:Provider;
-                            rdfs:label ?provider_name.
+                        ?collection a ccm:Collection;
+                            rdfs:label ?collection_name.
                     }",
                     None::<&gio::Cancellable>,
                 )
                 .unwrap();
 
-            while let Ok(true) = provider_cursor.next(None::<&gio::Cancellable>) {
-                let provider_uri = provider_cursor.string(0).unwrap();
-                let provider_name = provider_cursor.string(1).unwrap();
-                let provider = Provider::new(&provider_name);
+            while let Ok(true) = collection_cursor.next(None::<&gio::Cancellable>) {
+                let collection_uri = collection_cursor.string(0).unwrap();
+                let collection_name = collection_cursor.string(1).unwrap();
+                let collection = Collection::new(&collection_name);
+
                 if let Some(_old_ressource) = self.resource_pool().insert(
-                    provider_uri.to_string(),
-                    Resource::Provider(provider.clone()),
+                    collection_uri.to_string(),
+                    Resource::Collection(collection.clone()),
                 ) {
-                    warn!("Resource with URI \"{provider_uri}\" existed but has been replaced by the provider \"{provider_name}\"");
+                    warn!("Resource with URI \"{collection_uri}\" existed but has been replaced by the collection \"{collection_name}\"");
                 }
-                info!("Found URI \"{provider_uri}\" associated with provider \"{provider_name}\"");
+                self.collections().insert(0, &collection);
+
+                info!(
+                    "Found URI \"{collection_uri}\" associated with collection \"{collection_name}\""
+                );
 
                 let calendar_cursor = self
                     .read_connection()
@@ -182,7 +161,7 @@ mod imp {
                             WHERE {{
                                 ?calendar a ccm:Calendar;
                                     rdfs:label ?calendar_name;
-                                    ccm:provider {provider_uri}.
+                                    ccm:collection {collection_uri}.
                             }}"
                         ),
                         None::<&gio::Cancellable>,
@@ -193,7 +172,6 @@ mod imp {
                     let calendar_uri = calendar_cursor.string(0).unwrap();
                     let calendar_name = calendar_cursor.string(1).unwrap();
                     let calendar = Calendar::new(&calendar_name);
-                    self.list_store().insert(0, &calendar);
                     self.resource_pool().insert(
                         calendar_uri.to_string(),
                         Resource::Calendar(calendar.clone()),
@@ -242,7 +220,6 @@ mod imp {
                             Ok(true) => {
                                 let calendar_name = cursor.string(0).unwrap();
                                 let calendar = Calendar::new(&calendar_name);
-                                self.list_store().insert(0, &calendar);
                                 self.resource_pool()
                                     .insert(urn.to_string(), Resource::Calendar(calendar));
                                 info!("Calendar {calendar_name} created with uri {urn}");
@@ -260,13 +237,17 @@ mod imp {
                             }
                         };
                         match resource {
-                            Resource::Provider(provider) => {
+                            Resource::Provider(_provider) => {
                                 // TODO: Update provider properties
-                                info!("Provider {} updated", provider.name());
+                                // info!("Provider {} updated", provider.name());
                             }
-                            Resource::Calendar(calendar) => {
+                            Resource::Collection(_collection) => {
+                                // TODO: Update collection properties
+                                // info!("Collection {} updated", collection.name());
+                            }
+                            Resource::Calendar(_calendar) => {
                                 // TODO: Update calendar properties
-                                info!("Calendar {} updated", calendar.name());
+                                // info!("Calendar {} updated", calendar.name());
                             }
                         }
                     }
@@ -278,16 +259,11 @@ mod imp {
                                 Resource::Provider(_provider) => {
                                     // TODO
                                 }
-                                Resource::Calendar(calendar) => {
-                                    match self.list_store().find(&calendar) {
-                                        Some(index) => {
-                                            self.list_store().remove(index);
-                                            info!("Calendar {} removed", calendar.name());
-                                        }
-                                        None => {
-                                            error!("Calendar {} was deleted but is not found in list store", calendar.name());
-                                        }
-                                    }
+                                Resource::Collection(_collection) => {
+                                    // TODO
+                                }
+                                Resource::Calendar(_calendar) => {
+                                    // TODO
                                 }
                             },
                             None => {
@@ -314,8 +290,8 @@ impl Manager {
         glib::Object::builder().build()
     }
 
-    pub fn model(&self) -> &ListStore {
-        self.imp().list_store()
+    pub fn collections(&self) -> ListStore {
+        self.imp().collections().clone()
     }
 }
 
