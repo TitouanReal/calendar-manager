@@ -1,7 +1,13 @@
-use std::{cell::RefCell, fmt};
+use std::cell::{OnceCell, RefCell};
 
 use adw::{prelude::*, subclass::prelude::*};
-use gtk::glib::{self, Object};
+use gtk::{
+    gio::ListStore,
+    glib::{self, Object},
+};
+use tsparql::SparqlConnection;
+
+use crate::core::Calendar;
 
 mod imp {
     use super::*;
@@ -11,6 +17,8 @@ mod imp {
     pub struct Collection {
         #[property(get, set)]
         name: RefCell<String>,
+        #[property(get)]
+        calendars: OnceCell<ListStore>,
     }
 
     #[glib::object_subclass]
@@ -21,7 +29,21 @@ mod imp {
     }
 
     #[glib::derived_properties]
-    impl ObjectImpl for Collection {}
+    impl ObjectImpl for Collection {
+        fn constructed(&self) {
+            self.parent_constructed();
+
+            self.calendars.get_or_init(ListStore::new::<Calendar>);
+        }
+    }
+
+    impl Collection {
+        pub fn calendars(&self) -> &ListStore {
+            self.calendars
+                .get()
+                .expect("providers should be initialized")
+        }
+    }
 }
 
 glib::wrapper! {
@@ -32,10 +54,17 @@ impl Collection {
     pub fn new(name: &str) -> Self {
         glib::Object::builder().property("name", name).build()
     }
-}
 
-impl fmt::Display for Collection {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.name())
+    /// Retrieves a collection resource from a URI.
+    ///
+    /// # Panics
+    ///
+    /// This function may panic if the given URI is invalid or does not point to a collection resource.
+    pub fn from_uri(_read_connection: &SparqlConnection, _uri: &str) -> Result<Self, ()> {
+        todo!()
+    }
+
+    pub fn add_calendar(&self, calendar: &Calendar) {
+        self.imp().calendars().append(calendar);
     }
 }

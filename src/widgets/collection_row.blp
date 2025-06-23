@@ -5,33 +5,33 @@ template $CollectionRow: ListBoxRow {
   valign: center;
   selectable: false;
   focusable: false;
-  // Box {
-  //   orientation: vertical;
-  //   vexpand: true;
+  Box {
+    orientation: vertical;
+    vexpand: true;
   //   Box {
   //     orientation: horizontal;
   //     hexpand: true;
   //     margin-bottom: 6;
   //     margin-start: 6;
   //     margin-end: 6;
-  Label name_label {
-    halign: start;
-    margin-start: 6;
-    margin-bottom: 6;
+    Label name_label {
+      halign: start;
+      margin-start: 6;
+      margin-bottom: 6;
 
-    styles [
-      "heading",
-    ]
+      styles [
+        "heading",
+      ]
+    }
+
+    // }
+    ListBox calendars_list {
+      vexpand: true;
+      styles [
+        "boxed-list",
+      ]
+    }
   }
-
-  // }
-  // ListBox accounts_list {
-  //   vexpand: true;
-  //   styles [
-  //     "boxed-list",
-  //   ]
-  // }
-  // }
   styles [
     "provider-row",
   ]

@@ -1,9 +1,9 @@
 use std::cell::OnceCell;
 
 use adw::prelude::*;
-use gtk::{glib, subclass::prelude::*};
+use gtk::{glib, subclass::prelude::*, Label, ListBoxRow};
 
-use crate::core::Collection;
+use crate::core::{Calendar, Collection};
 
 mod imp {
     use super::*;
@@ -16,8 +16,8 @@ mod imp {
         pub collection: OnceCell<Collection>,
         #[template_child]
         pub name_label: TemplateChild<gtk::Label>,
-        // #[template_child]
-        // pub accounts_list: TemplateChild<gtk::ListBox>,
+        #[template_child]
+        pub calendars_list: TemplateChild<gtk::ListBox>,
     }
 
     #[glib::object_subclass]
@@ -67,7 +67,13 @@ impl CollectionRow {
             .sync_create()
             .build();
 
-        // imp.accounts_list
-        //     .bind_model(Some(&sort_model), create_callback);
+        imp.calendars_list
+            .bind_model(Some(&collection.calendars()), |calendar| {
+                let calendar = calendar.downcast_ref::<Calendar>().unwrap();
+                let calendar_row = ListBoxRow::new();
+                let label = Label::new(Some(&calendar.name()));
+                calendar_row.set_child(Some(&label));
+                calendar_row.upcast()
+            });
     }
 }

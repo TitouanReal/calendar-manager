@@ -9,7 +9,7 @@ use gtk::{
     gio::{self, BusType, DBusProxy, DBusProxyFlags, ListStore},
     glib::{self, clone, Object},
 };
-use tracing::{debug, info, warn};
+use tracing::{debug, error, info, warn};
 use tsparql::{prelude::SparqlCursorExtManual, Notifier, NotifierEvent, SparqlConnection};
 
 use crate::{
@@ -107,13 +107,13 @@ mod imp {
             self.notifier.get().expect("notifier should be initialized")
         }
 
-        pub fn collections(&self) -> &ListStore {
+        pub(super) fn collections(&self) -> &ListStore {
             self.collections
                 .get()
                 .expect("providers should be initialized")
         }
 
-        pub fn resource_pool(&self) -> MutexGuard<'_, HashMap<String, Resource>> {
+        pub(super) fn resource_pool(&self) -> MutexGuard<'_, HashMap<String, Resource>> {
             self.resource_pool
                 .get()
                 .expect("resource pool should be initialized")
@@ -171,11 +171,12 @@ mod imp {
                 while let Ok(true) = calendar_cursor.next(None::<&gio::Cancellable>) {
                     let calendar_uri = calendar_cursor.string(0).unwrap();
                     let calendar_name = calendar_cursor.string(1).unwrap();
-                    let calendar = Calendar::new(&calendar_name);
+                    let calendar = Calendar::new(&collection_uri, &calendar_name);
                     self.resource_pool().insert(
                         calendar_uri.to_string(),
                         Resource::Calendar(calendar.clone()),
                     );
+                    collection.add_calendar(&calendar);
 
                     info!(
                         "Found URI \"{calendar_uri}\" associated with calendar \"{calendar_name}\""
@@ -187,96 +188,124 @@ mod imp {
         fn handle_events(&self, events: Vec<NotifierEvent>) {
             debug!("Received {} events", events.len());
             for mut event in events {
-                info!("Received event {:?}", event.event_type());
-                match event.event_type() {
-                    tsparql::NotifierEventType::Create => {
-                        let urn = event.urn().unwrap();
-                        // TODO: get resource type - don't assume it is a calendar
-                        // TODO: Be safer than injecting a string
-                        let cursor = self
-                            .read_connection()
-                            .query(
-                                &format!(
-                                    "SELECT ?calendar_name
-                                    FROM ccm:Calendar
-                                    WHERE {{
-                                        \"{}\" rdfs:label ?calendar_name.
-                                    }}",
-                                    urn.as_str()
-                                ),
-                                None::<&gio::Cancellable>,
-                            )
-                            .unwrap();
+                let uri = event.urn().unwrap();
+                let event_type = event.event_type();
+                info!("Event type: {:?}, uri: {}", event_type, uri);
 
-                        // TODO: Handle errors
-                        // Maybe trigger a full refresh?
-                        match cursor.next(None::<&gio::Cancellable>) {
-                            Err(e) => {
-                                warn!("Encountered glib error: {}", e);
-                            }
-                            Ok(false) => {
-                                warn!("Resource {urn} was created but is not found in database");
-                            }
-                            Ok(true) => {
-                                let calendar_name = cursor.string(0).unwrap();
-                                let calendar = Calendar::new(&calendar_name);
-                                self.resource_pool()
-                                    .insert(urn.to_string(), Resource::Calendar(calendar));
-                                info!("Calendar {calendar_name} created with uri {urn}");
-                            }
-                        }
+                match event_type {
+                    tsparql::NotifierEventType::Create => {
+                        self.handle_event_create(&uri);
                     }
                     tsparql::NotifierEventType::Update => {
-                        let urn = event.urn().unwrap();
-                        let resource_pool = self.resource_pool();
-                        let resource = match resource_pool.get(urn.as_str()) {
-                            Some(resource) => resource,
-                            None => {
-                                warn!("Resource {urn} was updated but is not found in database");
-                                return;
-                            }
-                        };
-                        match resource {
-                            Resource::Provider(_provider) => {
-                                // TODO: Update provider properties
-                                // info!("Provider {} updated", provider.name());
-                            }
-                            Resource::Collection(_collection) => {
-                                // TODO: Update collection properties
-                                // info!("Collection {} updated", collection.name());
-                            }
-                            Resource::Calendar(_calendar) => {
-                                // TODO: Update calendar properties
-                                // info!("Calendar {} updated", calendar.name());
-                            }
-                        }
+                        self.handle_event_update(&uri);
                     }
                     tsparql::NotifierEventType::Delete => {
-                        let urn = event.urn().unwrap();
-                        let mut resource_pool = self.resource_pool();
-                        match resource_pool.remove(urn.as_str()) {
-                            Some(resource) => match resource {
-                                Resource::Provider(_provider) => {
-                                    // TODO
-                                }
-                                Resource::Collection(_collection) => {
-                                    // TODO
-                                }
-                                Resource::Calendar(_calendar) => {
-                                    // TODO
-                                }
-                            },
-                            None => {
-                                warn!("Resource {urn} was deleted but is not found in database");
-                                return;
-                            }
-                        };
+                        self.handle_event_delete(&uri);
                     }
                     _ => {
                         warn!("Unknown event type: {:?}", event.event_type());
                     }
                 }
             }
+        }
+
+        fn handle_event_create(&self, uri: &str) {
+            let resource_pool = self.resource_pool();
+
+            if resource_pool.contains_key(uri) {
+                error!("Resource already exists in pool: {}", uri);
+                // TODO: Trigger a full refresh
+                return;
+            }
+
+            let Ok(resource) = Resource::from_uri(self.read_connection(), uri) else {
+                error!("Failed to create resource from URI: {}", uri);
+                // TODO: Trigger a full refresh
+                return;
+            };
+
+            match resource {
+                Resource::Provider(_provider) => {
+                    todo!()
+                }
+                Resource::Collection(_collection) => {
+                    todo!()
+                }
+                Resource::Calendar(calendar) => {
+                    let collection_uri = calendar.collection_uri();
+                    match self.resource_pool().get(collection_uri.as_str()) {
+                        Some(Resource::Collection(collection)) => {
+                            collection.add_calendar(&calendar);
+                        }
+                        Some(_) => {
+                            // TODO: Trigger a full refresh
+                            error!("Resource {collection_uri} was updated but is not found in resource pool");
+                        }
+                        None => {
+                            // TODO: Trigger a full refresh
+                            error!("Resource {collection_uri} was updated but is not found in resource pool");
+                        }
+                    }
+                    self.resource_pool()
+                        .insert(uri.to_string(), Resource::Calendar(calendar));
+                }
+                Resource::Event(_event) => {
+                    todo!()
+                }
+            }
+        }
+
+        fn handle_event_update(&self, uri: &str) {
+            let resource_pool = self.resource_pool();
+            let resource = match resource_pool.get(uri) {
+                Some(resource) => resource,
+                None => {
+                    warn!("Resource {uri} was updated but is not found in database");
+                    return;
+                }
+            };
+            match resource {
+                Resource::Provider(_provider) => {
+                    // TODO: Update provider properties
+                    // info!("Provider {} updated", provider.name());
+                }
+                Resource::Collection(_collection) => {
+                    // TODO: Update collection properties
+                    // info!("Collection {} updated", collection.name());
+                }
+                Resource::Calendar(_calendar) => {
+                    // TODO: Update calendar properties
+                    // info!("Calendar {} updated", calendar.name());
+                }
+                Resource::Event(_event) => {
+                    // TODO: Update event properties
+                    // info!("Event {} updated", event.name());
+                }
+            }
+        }
+
+        fn handle_event_delete(&self, uri: &str) {
+            let mut resource_pool = self.resource_pool();
+            match resource_pool.remove(uri) {
+                Some(resource) => match resource {
+                    Resource::Provider(_provider) => {
+                        // TODO
+                    }
+                    Resource::Collection(_collection) => {
+                        // TODO
+                    }
+                    Resource::Calendar(_calendar) => {
+                        // TODO
+                    }
+                    Resource::Event(_event) => {
+                        // TODO: Update event properties
+                        // info!("Event {} updated", event.name());
+                    }
+                },
+                None => {
+                    warn!("Resource {uri} was deleted but is not found in database");
+                }
+            };
         }
     }
 }
