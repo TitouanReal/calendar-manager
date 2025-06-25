@@ -1,9 +1,9 @@
 use std::cell::OnceCell;
 
 use adw::prelude::*;
-use gtk::{glib, subclass::prelude::*, Label, ListBoxRow};
+use gtk::{glib, subclass::prelude::*};
 
-use crate::core::{Calendar, Collection};
+use crate::{core::Collection, widgets::CalendarRow};
 
 mod imp {
     use super::*;
@@ -69,11 +69,7 @@ impl CollectionRow {
 
         imp.calendars_list
             .bind_model(Some(&collection.calendars()), |calendar| {
-                let calendar = calendar.downcast_ref::<Calendar>().unwrap();
-                let calendar_row = ListBoxRow::new();
-                let label = Label::new(Some(&calendar.name()));
-                calendar_row.set_child(Some(&label));
-                calendar_row.upcast()
+                CalendarRow::new(calendar.downcast_ref().unwrap()).upcast()
             });
     }
 }

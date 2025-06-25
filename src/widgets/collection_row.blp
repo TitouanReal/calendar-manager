@@ -9,23 +9,22 @@ template $CollectionRow: ListBoxRow {
   Box {
     orientation: vertical;
     vexpand: true;
-    //   Box {
-    //     orientation: horizontal;
-    //     hexpand: true;
-    //     margin-bottom: 6;
-    //     margin-start: 6;
-    //     margin-end: 6;
-    Label name_label {
-      halign: start;
-      margin-start: 6;
+
+    Box {
+      orientation: horizontal;
+      hexpand: true;
       margin-bottom: 6;
 
-      styles [
-        "heading",
-      ]
+      Label name_label {
+        halign: start;
+        margin-bottom: 6;
+
+        styles [
+          "heading",
+        ]
+      }
     }
 
-    // }
     ListBox calendars_list {
       vexpand: true;
       selection-mode: none;

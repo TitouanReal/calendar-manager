@@ -1,0 +1,24 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CalendarRow: Adw.ActionRow {
+  activatable: true;
+  selectable: false;
+  use-markup: false;
+  // title: bind (template.calendar as <$Calendar>).name as <string>;
+  Label name_label {
+    halign: start;
+    valign: center;
+    selectable: true;
+
+    styles [
+      "numeric",
+    ]
+  }
+
+  [suffix]
+  Image {
+    icon-name: "go-next-symbolic";
+    tooltip-text: _("Account details");
+  }
+}
