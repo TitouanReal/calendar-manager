@@ -10,10 +10,10 @@ use gtk::{
     glib::{self, clone, Object},
 };
 use tracing::{debug, error, info, warn};
-use tsparql::{prelude::SparqlCursorExtManual, Notifier, NotifierEvent, SparqlConnection};
+use tsparql::{prelude::*, Notifier, NotifierEvent, NotifierEventType, SparqlConnection};
 
 use crate::{
-    core::{Calendar, Collection, Resource},
+    core::{pre_resource::PreResource, Calendar, Collection, Event, Provider, Resource},
     spawn,
     tsparql_utils::NotifierUtils,
 };
@@ -83,7 +83,7 @@ mod imp {
                           _service: Option<&str>,
                           _graph: Option<&str>,
                           events: Vec<NotifierEvent>| {
-                        imp.handle_events(events);
+                        imp.handle_notifier_events(events);
                     },
                 ))));
         }
@@ -171,7 +171,7 @@ mod imp {
                 while let Ok(true) = calendar_cursor.next(None::<&gio::Cancellable>) {
                     let calendar_uri = calendar_cursor.string(0).unwrap();
                     let calendar_name = calendar_cursor.string(1).unwrap();
-                    let calendar = Calendar::new(&collection_uri, &calendar_name);
+                    let calendar = Calendar::new(&calendar_name);
                     self.resource_pool().insert(
                         calendar_uri.to_string(),
                         Resource::Calendar(calendar.clone()),
@@ -185,127 +185,126 @@ mod imp {
             }
         }
 
-        fn handle_events(&self, events: Vec<NotifierEvent>) {
+        fn handle_notifier_events(&self, events: Vec<NotifierEvent>) {
             debug!("Received {} events", events.len());
-            for mut event in events {
-                let uri = event.urn().unwrap();
-                let event_type = event.event_type();
-                info!("Event type: {:?}, uri: {}", event_type, uri);
 
-                match event_type {
-                    tsparql::NotifierEventType::Create => {
-                        self.handle_event_create(&uri);
+            let mut resource_pool = self.resource_pool();
+
+            let mut create_events = Vec::new();
+            let mut update_events = Vec::new();
+            let mut delete_events = Vec::new();
+
+            for mut event in events {
+                match event.event_type() {
+                    NotifierEventType::Create => {
+                        create_events.push(event.urn().unwrap());
                     }
-                    tsparql::NotifierEventType::Update => {
-                        self.handle_event_update(&uri);
+                    NotifierEventType::Update => {
+                        update_events.push(event.urn().unwrap());
                     }
-                    tsparql::NotifierEventType::Delete => {
-                        self.handle_event_delete(&uri);
+                    NotifierEventType::Delete => {
+                        delete_events.push(event.urn().unwrap());
                     }
                     _ => {
-                        warn!("Unknown event type: {:?}", event.event_type());
+                        error!("Unknown event type: {:?}", event.event_type());
                     }
                 }
             }
-        }
 
-        fn handle_event_create(&self, uri: &str) {
-            let resource_pool = self.resource_pool();
+            let created_resources = create_events
+                .into_iter()
+                .map(|uri| PreResource::from_uri(self.read_connection(), &uri).unwrap())
+                .collect::<Vec<_>>();
 
-            if resource_pool.contains_key(uri) {
-                error!("Resource already exists in pool: {}", uri);
-                // TODO: Trigger a full refresh
-                return;
+            // Create providers
+            for pre_provider in created_resources.iter().filter_map(|pre_resource| {
+                if let PreResource::Provider(pre_provider) = pre_resource {
+                    Some(pre_provider)
+                } else {
+                    None
+                }
+            }) {
+                let provider = Provider::new(&pre_provider.name);
+                let provider_uri = pre_provider.uri.clone();
+                resource_pool.insert(provider_uri, Resource::Provider(provider));
+
+                info!("Created provider {}", pre_provider.uri);
             }
 
-            let Ok(resource) = Resource::from_uri(self.read_connection(), uri) else {
-                error!("Failed to create resource from URI: {}", uri);
-                // TODO: Trigger a full refresh
-                return;
-            };
+            // Create collections
+            for pre_collection in created_resources.iter().filter_map(|pre_resource| {
+                if let PreResource::Collection(pre_collection) = pre_resource {
+                    Some(pre_collection)
+                } else {
+                    None
+                }
+            }) {
+                let collection_uri = pre_collection.uri.clone();
+                let provider_uri = pre_collection.provider_uri.clone();
 
-            match resource {
-                Resource::Provider(_provider) => {
-                    todo!()
-                }
-                Resource::Collection(_collection) => {
-                    todo!()
-                }
-                Resource::Calendar(calendar) => {
-                    let collection_uri = calendar.collection_uri();
-                    match self.resource_pool().get(collection_uri.as_str()) {
-                        Some(Resource::Collection(collection)) => {
-                            collection.add_calendar(&calendar);
-                        }
-                        Some(_) => {
-                            // TODO: Trigger a full refresh
-                            error!("Resource {collection_uri} was updated but is not found in resource pool");
-                        }
-                        None => {
-                            // TODO: Trigger a full refresh
-                            error!("Resource {collection_uri} was updated but is not found in resource pool");
-                        }
-                    }
-                    self.resource_pool()
-                        .insert(uri.to_string(), Resource::Calendar(calendar));
-                }
-                Resource::Event(_event) => {
-                    todo!()
+                if let Some(Resource::Provider(provider)) = resource_pool.get(&provider_uri) {
+                    let collection = Collection::new(&pre_collection.name);
+                    provider.add_collection(&collection);
+                    resource_pool.insert(collection_uri, Resource::Collection(collection));
+
+                    info!("Created collection {}", pre_collection.uri);
+                } else {
+                    error!("Collection {collection_uri} has provider {provider_uri} but it does not exist");
                 }
             }
-        }
 
-        fn handle_event_update(&self, uri: &str) {
-            let resource_pool = self.resource_pool();
-            let resource = match resource_pool.get(uri) {
-                Some(resource) => resource,
-                None => {
-                    warn!("Resource {uri} was updated but is not found in database");
-                    return;
+            // Create calendars
+            for pre_calendar in created_resources.iter().filter_map(|pre_resource| {
+                if let PreResource::Calendar(pre_calendar) = pre_resource {
+                    Some(pre_calendar)
+                } else {
+                    None
                 }
-            };
-            match resource {
-                Resource::Provider(_provider) => {
-                    // TODO: Update provider properties
-                    // info!("Provider {} updated", provider.name());
-                }
-                Resource::Collection(_collection) => {
-                    // TODO: Update collection properties
-                    // info!("Collection {} updated", collection.name());
-                }
-                Resource::Calendar(_calendar) => {
-                    // TODO: Update calendar properties
-                    // info!("Calendar {} updated", calendar.name());
-                }
-                Resource::Event(_event) => {
-                    // TODO: Update event properties
-                    // info!("Event {} updated", event.name());
+            }) {
+                let calendar_uri = pre_calendar.uri.clone();
+                let collection_uri = pre_calendar.collection_uri.clone();
+
+                if let Some(Resource::Collection(collection)) = resource_pool.get(&collection_uri) {
+                    let calendar = Calendar::new(&pre_calendar.name);
+                    collection.add_calendar(&calendar);
+                    resource_pool.insert(calendar_uri, Resource::Calendar(calendar));
+
+                    info!("Created calendar {}", pre_calendar.uri);
+                } else {
+                    error!("Calendar {calendar_uri} has collection {collection_uri} but it does not exist");
                 }
             }
-        }
 
-        fn handle_event_delete(&self, uri: &str) {
-            let mut resource_pool = self.resource_pool();
-            match resource_pool.remove(uri) {
-                Some(resource) => match resource {
-                    Resource::Provider(_provider) => {
-                        // TODO
-                    }
-                    Resource::Collection(_collection) => {
-                        // TODO
-                    }
-                    Resource::Calendar(_calendar) => {
-                        // TODO
-                    }
-                    Resource::Event(_event) => {
-                        // TODO: Update event properties
-                        // info!("Event {} updated", event.name());
-                    }
-                },
-                None => {
-                    warn!("Resource {uri} was deleted but is not found in database");
+            // Create events
+            for pre_event in created_resources.iter().filter_map(|pre_resource| {
+                if let PreResource::Event(pre_event) = pre_resource {
+                    Some(pre_event)
+                } else {
+                    None
                 }
-            };
+            }) {
+                let event_uri = pre_event.uri.to_string();
+                let calendar_uri = pre_event.calendar_uri.clone();
+
+                if let Some(Resource::Calendar(calendar)) = resource_pool.get(&calendar_uri) {
+                    let event = Event::new(&pre_event.name);
+                    calendar.add_event(&event);
+                    resource_pool.insert(event_uri, Resource::Event(event));
+
+                    info!("Created event {}", pre_event.uri);
+                } else {
+                    error!("Event {event_uri} has calendar {calendar_uri} but it does not exist");
+                }
+            }
+
+            let _update_events = update_events
+                .into_iter()
+                .map(|uri| {
+                    let old = self.resource_pool().get(uri.as_str()).unwrap().to_owned();
+                    let new = PreResource::from_uri(self.read_connection(), &uri).unwrap();
+                    (uri, old, new)
+                })
+                .collect::<Vec<_>>();
         }
     }
 }

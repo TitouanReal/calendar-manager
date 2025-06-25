@@ -2,6 +2,7 @@ mod calendar;
 mod collection;
 mod event;
 mod manager;
+mod pre_resource;
 mod provider;
 mod resource;
 

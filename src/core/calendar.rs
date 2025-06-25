@@ -1,12 +1,12 @@
-use std::cell::RefCell;
+use std::cell::{OnceCell, RefCell};
 
 use adw::{prelude::*, subclass::prelude::*};
 use gtk::{
-    gio,
+    gio::ListStore,
     glib::{self, Object},
 };
-use tracing::{info, warn};
-use tsparql::{prelude::*, SparqlConnection};
+
+use crate::core::Event;
 
 mod imp {
     use super::*;
@@ -15,9 +15,9 @@ mod imp {
     #[properties(wrapper_type = super::Calendar)]
     pub struct Calendar {
         #[property(get, set)]
-        collection_uri: RefCell<String>,
-        #[property(get, set)]
         name: RefCell<String>,
+        #[property(get)]
+        events: OnceCell<ListStore>,
     }
 
     #[glib::object_subclass]
@@ -28,7 +28,19 @@ mod imp {
     }
 
     #[glib::derived_properties]
-    impl ObjectImpl for Calendar {}
+    impl ObjectImpl for Calendar {
+        fn constructed(&self) {
+            self.parent_constructed();
+
+            self.events.get_or_init(ListStore::new::<Event>);
+        }
+    }
+
+    impl Calendar {
+        pub fn events(&self) -> &ListStore {
+            self.events.get().expect("events should be initialized")
+        }
+    }
 }
 
 glib::wrapper! {
@@ -36,51 +48,11 @@ glib::wrapper! {
 }
 
 impl Calendar {
-    pub fn new(collection_uri: &str, name: &str) -> Self {
-        glib::Object::builder()
-            .property("collection-uri", collection_uri)
-            .property("name", name)
-            .build()
+    pub fn new(name: &str) -> Self {
+        glib::Object::builder().property("name", name).build()
     }
 
-    /// Retrieves a calendar resource from a URI.
-    ///
-    /// # Panics
-    ///
-    /// This function may panic if the given URI is invalid or does not point to a calendar resource.
-    pub fn from_uri(read_connection: &SparqlConnection, uri: &str) -> Result<Self, ()> {
-        let cursor = read_connection
-            .query(
-                &format!(
-                    "SELECT ?calendar_name ?collection
-                    FROM ccm:Calendar
-                    WHERE {{
-                        \"{}\" rdfs:label ?calendar_name ;
-                            ccm:collection ?collection .
-                    }}",
-                    uri
-                ),
-                None::<&gio::Cancellable>,
-            )
-            .unwrap();
-
-        match cursor.next(None::<&gio::Cancellable>) {
-            Err(e) => {
-                warn!("Encountered glib error: {}", e);
-                Err(())
-            }
-            Ok(false) => {
-                warn!("Resource {uri} was created but is not found in database");
-                Err(())
-            }
-            Ok(true) => {
-                let calendar_name = cursor.string(0).unwrap();
-                let collection_uri = cursor.string(1).unwrap();
-                let calendar = Calendar::new(&collection_uri, &calendar_name);
-
-                info!("Calendar {calendar_name} created with uri {uri}");
-                Ok(calendar)
-            }
-        }
+    pub fn add_event(&self, event: &Event) {
+        self.imp().events().append(event);
     }
 }

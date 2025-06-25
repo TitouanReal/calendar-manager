@@ -5,7 +5,6 @@ use gtk::{
     gio::ListStore,
     glib::{self, Object},
 };
-use tsparql::SparqlConnection;
 
 use crate::core::Calendar;
 
@@ -41,7 +40,7 @@ mod imp {
         pub fn calendars(&self) -> &ListStore {
             self.calendars
                 .get()
-                .expect("providers should be initialized")
+                .expect("calendars should be initialized")
         }
     }
 }
@@ -53,15 +52,6 @@ glib::wrapper! {
 impl Collection {
     pub fn new(name: &str) -> Self {
         glib::Object::builder().property("name", name).build()
-    }
-
-    /// Retrieves a collection resource from a URI.
-    ///
-    /// # Panics
-    ///
-    /// This function may panic if the given URI is invalid or does not point to a collection resource.
-    pub fn from_uri(_read_connection: &SparqlConnection, _uri: &str) -> Result<Self, ()> {
-        todo!()
     }
 
     pub fn add_calendar(&self, calendar: &Calendar) {

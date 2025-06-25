@@ -1,9 +1,12 @@
-use std::cell::RefCell;
+use std::cell::{OnceCell, RefCell};
 
-use adw::prelude::*;
-use adw::subclass::prelude::*;
-use gtk::glib::{self, Object};
-use tsparql::SparqlConnection;
+use adw::{prelude::*, subclass::prelude::*};
+use gtk::{
+    gio::ListStore,
+    glib::{self, Object},
+};
+
+use crate::core::Collection;
 
 mod imp {
     use super::*;
@@ -13,6 +16,8 @@ mod imp {
     pub struct Provider {
         #[property(get, set)]
         name: RefCell<String>,
+        #[property(get)]
+        collections: OnceCell<ListStore>,
     }
 
     #[glib::object_subclass]
@@ -23,7 +28,21 @@ mod imp {
     }
 
     #[glib::derived_properties]
-    impl ObjectImpl for Provider {}
+    impl ObjectImpl for Provider {
+        fn constructed(&self) {
+            self.parent_constructed();
+
+            self.collections.get_or_init(ListStore::new::<Collection>);
+        }
+    }
+
+    impl Provider {
+        pub fn collections(&self) -> &ListStore {
+            self.collections
+                .get()
+                .expect("collections should be initialized")
+        }
+    }
 }
 
 glib::wrapper! {
@@ -36,12 +55,7 @@ impl Provider {
         glib::Object::builder().property("name", name).build()
     }
 
-    /// Retrieves an event resource from a URI.
-    ///
-    /// # Panics
-    ///
-    /// This function may panic if the given URI is invalid or does not point to a provider resource.
-    pub fn from_uri(_read_connection: &SparqlConnection, _uri: &str) -> Result<Self, ()> {
-        todo!()
+    pub fn add_collection(&self, collection: &Collection) {
+        self.imp().collections().append(collection);
     }
 }
