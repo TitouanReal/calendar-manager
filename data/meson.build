@@ -1,3 +1,5 @@
+subdir('resources')
+
 desktop_file = i18n.merge_file(
         input: 'io.gitlab.TitouanReal.CalendarManager.desktop.in',
        output: 'io.gitlab.TitouanReal.CalendarManager.desktop',

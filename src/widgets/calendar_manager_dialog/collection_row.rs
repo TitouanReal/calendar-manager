@@ -3,7 +3,8 @@ use std::cell::OnceCell;
 use adw::prelude::*;
 use gtk::{glib, subclass::prelude::*};
 
-use crate::{core::Collection, widgets::CalendarRow};
+use super::calendar_row::CalendarRow;
+use crate::core::Collection;
 
 mod imp {
     use super::*;
@@ -14,6 +15,8 @@ mod imp {
     pub struct CollectionRow {
         #[property(get, set, construct_only)]
         pub collection: OnceCell<Collection>,
+        // #[template_child]
+        // pub preferences_group: TemplateChild<adw::PreferencesGroup>,
         #[template_child]
         pub name_label: TemplateChild<gtk::Label>,
         #[template_child]
@@ -66,6 +69,11 @@ impl CollectionRow {
             .bind_property("name", &*imp.name_label, "label")
             .sync_create()
             .build();
+
+        // collection
+        //     .bind_property("name", &*imp.preferences_group, "title")
+        //     .sync_create()
+        //     .build();
 
         imp.calendars_list
             .bind_model(Some(&collection.calendars()), |calendar| {

@@ -1,7 +1,8 @@
 use adw::prelude::*;
 use gtk::{gio::ListStore, glib, subclass::prelude::*};
 
-use crate::{core::Collection, widgets::CollectionRow};
+use super::collection_row::CollectionRow;
+use crate::core::Collection;
 
 mod imp {
     use super::*;

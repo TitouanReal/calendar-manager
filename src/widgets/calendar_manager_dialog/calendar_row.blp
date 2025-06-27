@@ -6,15 +6,6 @@ template $CalendarRow: Adw.ActionRow {
   selectable: false;
   use-markup: false;
   // title: bind (template.calendar as <$Calendar>).name as <string>;
-  Label name_label {
-    halign: start;
-    valign: center;
-    selectable: true;
-
-    styles [
-      "numeric",
-    ]
-  }
 
   [suffix]
   Image {

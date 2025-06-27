@@ -1,0 +1,15 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CalendarManagerDialog: Adw.Dialog {
+  title: _("Calendars");
+  content-height: 500;
+  content-width: 500;
+
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {}
+
+    content: $CollectionsList collections_list {};
+  };
+}

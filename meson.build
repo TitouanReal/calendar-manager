@@ -11,6 +11,8 @@ dependency('tinysparql-3.0', version: '>= 3.9')
 i18n = import('i18n')
 gnome = import('gnome')
 
+pkgdatadir = get_option('prefix') / get_option('datadir') / meson.project_name()
+
 subdir('data')
 subdir('src')
 subdir('po')

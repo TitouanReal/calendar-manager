@@ -1,9 +1,4 @@
-mod calendar_row;
-mod collection_row;
-mod collections_list;
+mod calendar_manager_dialog;
 mod window;
 
-pub use self::{
-    calendar_row::CalendarRow, collection_row::CollectionRow, collections_list::CollectionsList,
-    window::CalendarManagerWindow,
-};
+pub use self::{calendar_manager_dialog::CalendarManagerDialog, window::CalendarManagerWindow};

@@ -1,19 +1,19 @@
 use std::cell::OnceCell;
 
 use adw::{prelude::*, subclass::prelude::*};
-use gtk::{gio, glib};
+use gtk::{gdk, gio, glib};
 
-use crate::{core::Manager, widgets::CollectionsList};
+use crate::core::Manager;
 
 mod imp {
+    use crate::widgets::CalendarManagerDialog;
+
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/widgets/window.ui")]
     pub struct CalendarManagerWindow {
         manager: OnceCell<Manager>,
-        #[template_child]
-        collections_list: TemplateChild<CollectionsList>,
     }
 
     #[glib::object_subclass]
@@ -24,6 +24,17 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
+            klass.bind_template_callbacks();
+
+            klass.install_action("win.manage_calendars", None, |obj, _, _| {
+                obj.imp().manage_calendars();
+            });
+
+            klass.add_binding_action(
+                gdk::Key::M,
+                gdk::ModifierType::CONTROL_MASK | gdk::ModifierType::ALT_MASK,
+                "win.manage_calendars",
+            );
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -36,9 +47,6 @@ mod imp {
             self.parent_constructed();
 
             self.manager.get_or_init(Manager::new);
-
-            let manager = self.manager();
-            self.collections_list.set_model(manager.collections());
         }
     }
     impl WidgetImpl for CalendarManagerWindow {}
@@ -46,9 +54,16 @@ mod imp {
     impl ApplicationWindowImpl for CalendarManagerWindow {}
     impl AdwApplicationWindowImpl for CalendarManagerWindow {}
 
+    #[gtk::template_callbacks]
     impl CalendarManagerWindow {
         fn manager(&self) -> &Manager {
             self.manager.get().expect("manager should be initialized")
+        }
+
+        #[template_callback]
+        fn manage_calendars(&self) {
+            let dialog = CalendarManagerDialog::new(self.manager());
+            dialog.present(Some(&*self.obj()));
         }
     }
 }

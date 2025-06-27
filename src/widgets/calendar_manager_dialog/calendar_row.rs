@@ -14,8 +14,6 @@ mod imp {
     pub struct CalendarRow {
         #[property(get, set, construct_only)]
         pub calendar: OnceCell<Calendar>,
-        #[template_child]
-        pub name_label: TemplateChild<gtk::Label>,
     }
 
     #[glib::object_subclass]
@@ -60,11 +58,10 @@ impl CalendarRow {
     }
 
     fn setup_widget(&self) {
-        let imp = self.imp();
         let calendar = self.calendar();
 
         calendar
-            .bind_property("name", &*imp.name_label, "label")
+            .bind_property("name", self, "title")
             .sync_create()
             .build();
     }

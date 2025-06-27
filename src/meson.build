@@ -1,13 +1,11 @@
-pkgdatadir = get_option('prefix') / get_option('datadir') / meson.project_name()
-gnome = import('gnome')
-
 blueprints = custom_target(
     'blueprints',
     input: files(
         'gtk/help-overlay.blp',
-        'widgets/calendar_row.blp',
-        'widgets/collection_row.blp',
-        'widgets/collections_list.blp',
+        'widgets/calendar_manager_dialog/calendar_row.blp',
+        'widgets/calendar_manager_dialog/collection_row.blp',
+        'widgets/calendar_manager_dialog/collections_list.blp',
+        'widgets/calendar_manager_dialog/mod.blp',
         'widgets/window.blp',
     ),
     output: '.',
