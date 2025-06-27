@@ -1,7 +1,6 @@
 mod application;
 mod config;
 mod core;
-mod tsparql_utils;
 mod utils;
 mod widgets;
 

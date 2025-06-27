@@ -15,7 +15,6 @@ use tsparql::{prelude::*, Notifier, NotifierEvent, NotifierEventType, SparqlConn
 use crate::{
     core::{pre_resource::PreResource, Calendar, Collection, Event, Provider, Resource},
     spawn,
-    tsparql_utils::NotifierUtils,
 };
 
 mod imp {
