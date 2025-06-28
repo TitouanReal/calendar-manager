@@ -9,7 +9,7 @@ pub(crate) mod imp {
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/widgets/window.ui")]
+    #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/window.ui")]
     pub struct CalendarManagerWindow {
         manager: OnceCell<Manager>,
     }

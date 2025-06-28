@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/io/gitlab/TitouanReal/CalendarManager">
+    <file compressed="true" alias="style.css">resources/style.css</file>
+
+    <file compressed="true" preprocess="xml-stripblanks" alias="calendar_row.ui">resources/ui/calendar_manager_dialog/calendar_row.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="collection_row.ui">resources/ui/calendar_manager_dialog/collection_row.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="collections_list.ui">resources/ui/calendar_manager_dialog/collections_list.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="calendar_manager_dialog.ui">resources/ui/calendar_manager_dialog/calendar_manager_dialog.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="window.ui">resources/ui/window.ui</file>
+  </gresource>
+
+  <gresource prefix="/io/gitlab/TitouanReal/CalendarManager/icons/16x16">
+    <file preprocess="xml-stripblanks" alias="plus-large-symbolic.svg">resources/icons/plus-large-symbolic.svg</file>
+    <file preprocess="xml-stripblanks" alias="info-outline-symbolic.svg">resources/icons/info-outline-symbolic.svg</file>
+  </gresource>
+</gresources>

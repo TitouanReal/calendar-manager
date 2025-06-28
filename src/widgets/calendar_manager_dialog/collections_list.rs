@@ -8,9 +8,7 @@ mod imp {
     use super::*;
 
     #[derive(Default, gtk::CompositeTemplate)]
-    #[template(
-        resource = "/io/gitlab/TitouanReal/CalendarManager/widgets/calendar_manager_dialog/collections_list.ui"
-    )]
+    #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/collections_list.ui")]
     pub struct CollectionsList {
         #[template_child]
         pub providers_list: TemplateChild<gtk::ListBox>,

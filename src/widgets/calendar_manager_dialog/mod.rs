@@ -14,9 +14,7 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate, glib::Properties)]
-    #[template(
-        resource = "/io/gitlab/TitouanReal/CalendarManager/widgets/calendar_manager_dialog/mod.ui"
-    )]
+    #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/calendar_manager_dialog.ui")]
     #[properties(wrapper_type = super::CalendarManagerDialog)]
     pub struct CalendarManagerDialog {
         #[property(get, set, construct_only)]

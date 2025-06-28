@@ -10,9 +10,7 @@ mod imp {
     use super::*;
 
     #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
-    #[template(
-        resource = "/io/gitlab/TitouanReal/CalendarManager/widgets/calendar_manager_dialog/collection_row.ui"
-    )]
+    #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/collection_row.ui")]
     #[properties(wrapper_type = super::CollectionRow)]
     pub struct CollectionRow {
         #[property(get, set, construct_only)]

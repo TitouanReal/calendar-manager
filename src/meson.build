@@ -1,32 +1,3 @@
-blueprints = custom_target(
-    'blueprints',
-    input: files(
-        'gtk/help-overlay.blp',
-        'widgets/calendar_manager_dialog/calendar_row.blp',
-        'widgets/calendar_manager_dialog/collection_row.blp',
-        'widgets/calendar_manager_dialog/collections_list.blp',
-        'widgets/calendar_manager_dialog/mod.blp',
-        'widgets/window.blp',
-    ),
-    output: '.',
-    command: [
-        find_program('blueprint-compiler'),
-        'batch-compile',
-        '@OUTPUT@',
-        '@CURRENT_SOURCE_DIR@',
-        '@INPUT@',
-    ],
-)
-
-gnome.compile_resources(
-    'calendar-manager',
-    'calendar-manager.gresource.xml',
-    gresource_bundle: true,
-    dependencies: blueprints,
-    install: true,
-    install_dir: pkgdatadir,
-)
-
 conf = configuration_data()
 conf.set_quoted('VERSION', meson.project_version())
 conf.set_quoted('GETTEXT_PACKAGE', 'calendar-manager')
