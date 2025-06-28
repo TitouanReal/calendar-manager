@@ -33,6 +33,19 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
+
+            klass.install_action(
+                "calendar-manager.show-calendar-subpage",
+                None,
+                |_obj, _, _param| {
+                    // let subpage = param
+                    //     .and_then(glib::Variant::get::<AccountSettingsSubpage>)
+                    //     .expect("The parameter should be a valid subpage name");
+
+                    // obj.show_subpage(subpage);
+                    dbg!("todo");
+                },
+            );
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {

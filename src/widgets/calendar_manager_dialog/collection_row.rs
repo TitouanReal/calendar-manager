@@ -1,4 +1,4 @@
-use std::cell::OnceCell;
+use std::cell::RefCell;
 
 use adw::prelude::*;
 use gtk::{glib, subclass::prelude::*};
@@ -10,11 +10,13 @@ mod imp {
     use super::*;
 
     #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
-    #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/widgets/collection_row.ui")]
+    #[template(
+        resource = "/io/gitlab/TitouanReal/CalendarManager/widgets/calendar_manager_dialog/collection_row.ui"
+    )]
     #[properties(wrapper_type = super::CollectionRow)]
     pub struct CollectionRow {
         #[property(get, set, construct_only)]
-        pub collection: OnceCell<Collection>,
+        pub collection: RefCell<Option<Collection>>,
         // #[template_child]
         // pub preferences_group: TemplateChild<adw::PreferencesGroup>,
         #[template_child]
@@ -31,6 +33,7 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
+            klass.bind_template_callbacks();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -47,6 +50,14 @@ mod imp {
     }
     impl WidgetImpl for CollectionRow {}
     impl ListBoxRowImpl for CollectionRow {}
+
+    #[gtk::template_callbacks]
+    impl CollectionRow {
+        #[template_callback]
+        fn create_calendar(&self) {
+            dbg!("todo");
+        }
+    }
 }
 
 glib::wrapper! {
@@ -63,17 +74,7 @@ impl CollectionRow {
 
     fn setup_widget(&self) {
         let imp = self.imp();
-        let collection = self.collection();
-
-        collection
-            .bind_property("name", &*imp.name_label, "label")
-            .sync_create()
-            .build();
-
-        // collection
-        //     .bind_property("name", &*imp.preferences_group, "title")
-        //     .sync_create()
-        //     .build();
+        let collection = self.collection().expect("collection should be initialized");
 
         imp.calendars_list
             .bind_model(Some(&collection.calendars()), |calendar| {

@@ -2,14 +2,21 @@ using Gtk 4.0;
 using Adw 1;
 
 template $CalendarRow: Adw.ActionRow {
+  title: bind template.calendar as <$Calendar>.name;
   activatable: true;
   selectable: false;
   use-markup: false;
-  // title: bind (template.calendar as <$Calendar>).name as <string>;
+  activated => $toggle_calendar_visible(template);
 
   [suffix]
-  Image {
-    icon-name: "go-next-symbolic";
-    tooltip-text: _("Account details");
+  Button {
+    icon-name: "info-outline-symbolic";
+    tooltip-text: _("Calendar details");
+    valign: center;
+    clicked => $show_calendar_subpage(template);
+
+    styles [
+      "flat",
+    ]
   }
 }

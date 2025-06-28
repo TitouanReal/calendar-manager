@@ -3,11 +3,9 @@ use std::cell::OnceCell;
 use adw::{prelude::*, subclass::prelude::*};
 use gtk::{gdk, gio, glib};
 
-use crate::core::Manager;
+use crate::{core::Manager, widgets::CalendarManagerDialog};
 
-mod imp {
-    use crate::widgets::CalendarManagerDialog;
-
+pub(crate) mod imp {
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]

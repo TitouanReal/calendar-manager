@@ -24,11 +24,23 @@ template $CollectionRow: ListBoxRow {
       margin-bottom: 6;
 
       Label name_label {
+        label: bind template.collection as <$Collection>.name;
         halign: start;
         margin-bottom: 6;
 
         styles [
           "heading",
+        ]
+      }
+
+      Button {
+        icon-name: "plus-large-symbolic";
+        halign: end;
+        hexpand: true;
+        clicked => $create_calendar(template);
+
+        styles [
+          "flat",
         ]
       }
     }
