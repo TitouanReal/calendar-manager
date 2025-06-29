@@ -1,7 +1,13 @@
 using Gtk 4.0;
+using Gdk 4.0;
 using Adw 1;
 
 template $CalendarRow: Adw.ActionRow {
+  [prefix]
+  Image {
+    paintable: bind $get_color_image(template.calendar as <$Calendar>.color as <Gdk.RGBA>) as <Gdk.Paintable>;
+  }
+
   title: bind template.calendar as <$Calendar>.name;
   activatable: true;
   selectable: false;

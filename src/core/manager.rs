@@ -7,13 +7,13 @@ use std::{
 use adw::subclass::prelude::*;
 use gtk::{
     gio::{self, BusType, DBusProxy, DBusProxyFlags, ListStore},
-    glib::{self, clone, Object},
+    glib::{self, Object, clone},
 };
 use tracing::{debug, error, info, warn};
-use tsparql::{prelude::*, Notifier, NotifierEvent, NotifierEventType, SparqlConnection};
+use tsparql::{Notifier, NotifierEvent, NotifierEventType, SparqlConnection, prelude::*};
 
 use crate::{
-    core::{pre_resource::PreResource, Calendar, Collection, Event, Provider, Resource},
+    core::{Calendar, Collection, Event, Provider, Resource, pre_resource::PreResource},
     spawn,
 };
 
@@ -27,7 +27,7 @@ mod imp {
         notifier: OnceCell<tsparql::Notifier>,
         resource_pool: OnceCell<Mutex<HashMap<String, Resource>>>,
         collections: OnceCell<ListStore>,
-        notifier_handler: RefCell<Option<glib::SignalHandlerId>>,
+        events_handler: RefCell<Option<glib::SignalHandlerId>>,
     }
 
     #[glib::object_subclass]
@@ -74,7 +74,7 @@ mod imp {
                 }
             ));
 
-            self.notifier_handler
+            self.events_handler
                 .replace(Some(self.notifier().connect_events(clone!(
                     #[weak(rename_to = imp)]
                     self,
@@ -143,7 +143,9 @@ mod imp {
                     collection_uri.to_string(),
                     Resource::Collection(collection.clone()),
                 ) {
-                    warn!("Resource with URI \"{collection_uri}\" existed but has been replaced by the collection \"{collection_name}\"");
+                    warn!(
+                        "Resource with URI \"{collection_uri}\" existed but has been replaced by the collection \"{collection_name}\""
+                    );
                 }
                 self.collections().insert(0, &collection);
 
@@ -155,11 +157,12 @@ mod imp {
                     .read_connection()
                     .query(
                         &format!(
-                            "SELECT ?calendar ?calendar_name
+                            "SELECT ?calendar ?calendar_color ?calendar_name
                             FROM ccm:Calendar
                             WHERE {{
-                                ?calendar a ccm:Calendar;
-                                    rdfs:label ?calendar_name;
+                                ?calendar a ccm:Calendar ;
+                                    rdfs:label ?calendar_name ;
+                                    ccm:color ?calendar_color ;
                                     ccm:collection {collection_uri}.
                             }}"
                         ),
@@ -169,8 +172,16 @@ mod imp {
 
                 while let Ok(true) = calendar_cursor.next(None::<&gio::Cancellable>) {
                     let calendar_uri = calendar_cursor.string(0).unwrap();
-                    let calendar_name = calendar_cursor.string(1).unwrap();
-                    let calendar = Calendar::new(&calendar_name);
+                    let calendar_color = match calendar_cursor.string(1).unwrap().parse() {
+                        Ok(color) => color,
+                        Err(e) => {
+                            warn!("Failed to parse calendar color: {}", e);
+                            continue;
+                        }
+                    };
+                    let calendar_name = calendar_cursor.string(2).unwrap();
+
+                    let calendar = Calendar::new(&calendar_name, calendar_color);
                     self.resource_pool().insert(
                         calendar_uri.to_string(),
                         Resource::Calendar(calendar.clone()),
@@ -248,7 +259,9 @@ mod imp {
 
                     info!("Created collection {}", pre_collection.uri);
                 } else {
-                    error!("Collection {collection_uri} has provider {provider_uri} but it does not exist");
+                    error!(
+                        "Collection {collection_uri} has provider {provider_uri} but it does not exist"
+                    );
                 }
             }
 
@@ -264,13 +277,15 @@ mod imp {
                 let collection_uri = pre_calendar.collection_uri.clone();
 
                 if let Some(Resource::Collection(collection)) = resource_pool.get(&collection_uri) {
-                    let calendar = Calendar::new(&pre_calendar.name);
+                    let calendar = Calendar::new(&pre_calendar.name, pre_calendar.color);
                     collection.add_calendar(&calendar);
                     resource_pool.insert(calendar_uri, Resource::Calendar(calendar));
 
                     info!("Created calendar {}", pre_calendar.uri);
                 } else {
-                    error!("Calendar {calendar_uri} has collection {collection_uri} but it does not exist");
+                    error!(
+                        "Calendar {calendar_uri} has collection {collection_uri} but it does not exist"
+                    );
                 }
             }
 

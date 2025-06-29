@@ -2,6 +2,7 @@ use std::cell::{OnceCell, RefCell};
 
 use adw::{prelude::*, subclass::prelude::*};
 use gtk::{
+    gdk::{self, RGBA},
     gio::ListStore,
     glib::{self, Object},
 };
@@ -16,6 +17,9 @@ mod imp {
     pub struct Calendar {
         #[property(get, set)]
         name: RefCell<String>,
+        // TODO: Remove the Option
+        #[property(get, set)]
+        color: RefCell<Option<RGBA>>,
         #[property(get)]
         events: OnceCell<ListStore>,
     }
@@ -48,8 +52,11 @@ glib::wrapper! {
 }
 
 impl Calendar {
-    pub fn new(name: &str) -> Self {
-        glib::Object::builder().property("name", name).build()
+    pub fn new(name: &str, color: gdk::RGBA) -> Self {
+        glib::Object::builder()
+            .property("name", name)
+            .property("color", Some(color))
+            .build()
     }
 
     pub fn add_event(&self, event: &Event) {

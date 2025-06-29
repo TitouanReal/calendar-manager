@@ -1,11 +1,12 @@
-use gtk::gio;
+use gtk::{gdk::RGBA, gio};
 use tracing::error;
-use tsparql::{prelude::*, SparqlConnection};
+use tsparql::{SparqlConnection, prelude::*};
 
 pub struct PreCalendar {
     pub uri: String,
     pub collection_uri: String,
     pub name: String,
+    pub color: RGBA,
 }
 
 impl PreCalendar {
@@ -18,10 +19,11 @@ impl PreCalendar {
         let cursor = read_connection
             .query(
                 &format!(
-                    "SELECT ?calendar_name ?collection
+                    "SELECT ?name ?color ?collection
                     FROM ccm:Calendar
                     WHERE {{
-                        \"{}\" rdfs:label ?calendar_name ;
+                        \"{}\" rdfs:label ?name ;
+                            ccm:color ?color ;
                             ccm:collection ?collection .
                     }}",
                     uri
@@ -41,11 +43,19 @@ impl PreCalendar {
             }
             Ok(true) => {
                 let calendar_name = cursor.string(0).unwrap();
-                let collection_uri = cursor.string(1).unwrap();
+                let calendar_color = match cursor.string(1).unwrap().parse() {
+                    Ok(color) => color,
+                    Err(_) => {
+                        error!("Invalid color value for calendar {}", calendar_name);
+                        return Err(());
+                    }
+                };
+                let collection_uri = cursor.string(2).unwrap();
                 let calendar = Self {
                     uri: uri.to_string(),
                     collection_uri: collection_uri.to_string(),
                     name: calendar_name.to_string(),
+                    color: calendar_color,
                 };
 
                 Ok(calendar)

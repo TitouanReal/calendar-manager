@@ -1,9 +1,12 @@
-use std::cell::RefCell;
+use std::cell::{OnceCell, RefCell};
 
 use adw::{prelude::*, subclass::prelude::*};
-use gtk::glib::{self};
+use gtk::{
+    gdk::{Paintable, RGBA},
+    glib::{self},
+};
 
-use crate::core::Calendar;
+use crate::{core::Calendar, utils::get_circle_paintable_from_color};
 
 mod imp {
     use super::*;
@@ -57,6 +60,11 @@ mod imp {
         #[template_callback]
         fn toggle_calendar_visible(&self) {
             dbg!("todo");
+        }
+
+        #[template_callback]
+        fn get_color_image(&self, color: RGBA) -> Paintable {
+            get_circle_paintable_from_color(&color, 16)
         }
     }
 }
