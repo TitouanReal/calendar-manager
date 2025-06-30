@@ -15,6 +15,8 @@ mod imp {
     #[derive(Debug, Default, glib::Properties)]
     #[properties(wrapper_type = super::Calendar)]
     pub struct Calendar {
+        #[property(get, construct_only)]
+        uri: RefCell<String>,
         #[property(get, set)]
         name: RefCell<String>,
         // TODO: Remove the Option
@@ -52,8 +54,9 @@ glib::wrapper! {
 }
 
 impl Calendar {
-    pub fn new(name: &str, color: gdk::RGBA) -> Self {
+    pub fn new(uri: &str, name: &str, color: gdk::RGBA) -> Self {
         glib::Object::builder()
+            .property("uri", uri)
             .property("name", name)
             .property("color", Some(color))
             .build()

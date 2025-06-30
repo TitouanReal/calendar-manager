@@ -1,6 +1,7 @@
 blueprints = custom_target(
     'blueprints',
     input: files(
+        'resources/ui/calendar_manager_dialog/calendar_details_page.blp',
         'resources/ui/calendar_manager_dialog/calendar_manager_dialog.blp',
         'resources/ui/calendar_manager_dialog/calendar_row.blp',
         'resources/ui/calendar_manager_dialog/collection_row.blp',

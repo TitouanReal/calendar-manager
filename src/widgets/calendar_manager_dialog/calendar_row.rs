@@ -1,9 +1,9 @@
-use std::cell::{OnceCell, RefCell};
+use std::cell::RefCell;
 
 use adw::{prelude::*, subclass::prelude::*};
 use gtk::{
     gdk::{Paintable, RGBA},
-    glib::{self},
+    glib,
 };
 
 use crate::{core::Calendar, utils::get_circle_paintable_from_color};
@@ -53,7 +53,11 @@ mod imp {
         fn show_calendar_subpage(&self) {
             let obj = self.obj();
 
-            let _ = obj.activate_action("calendar-manager.show-calendar-subpage", None);
+            // TODO: Clean this mess
+            let _ = obj.activate_action(
+                "calendar-manager.show-calendar-subpage",
+                Some(&self.calendar.borrow().as_ref().unwrap().uri().to_variant()),
+            );
         }
 
         /// Toggle the visibility of the calendar.
@@ -64,7 +68,7 @@ mod imp {
 
         #[template_callback]
         fn get_color_image(&self, color: RGBA) -> Paintable {
-            get_circle_paintable_from_color(&color, 16)
+            get_circle_paintable_from_color(&color, 16.)
         }
     }
 }

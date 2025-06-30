@@ -7,6 +7,7 @@
     <file compressed="true" preprocess="xml-stripblanks" alias="collection_row.ui">resources/ui/calendar_manager_dialog/collection_row.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="collections_list.ui">resources/ui/calendar_manager_dialog/collections_list.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="calendar_manager_dialog.ui">resources/ui/calendar_manager_dialog/calendar_manager_dialog.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="calendar_details_page.ui">resources/ui/calendar_manager_dialog/calendar_details_page.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="window.ui">resources/ui/window.ui</file>
   </gresource>
 

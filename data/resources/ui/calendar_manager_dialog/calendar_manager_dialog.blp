@@ -6,10 +6,16 @@ template $CalendarManagerDialog: Adw.Dialog {
   content-height: 500;
   content-width: 500;
 
-  child: Adw.ToolbarView {
-    [top]
-    Adw.HeaderBar {}
+  Adw.NavigationView navigation_view {
+    Adw.NavigationPage {
+      title: _("Calendars");
 
-    content: $CollectionsList collections_list {};
-  };
+      child: Adw.ToolbarView {
+        [top]
+        Adw.HeaderBar {}
+
+        content: $CollectionsList collections_list {};
+      };
+    }
+  }
 }

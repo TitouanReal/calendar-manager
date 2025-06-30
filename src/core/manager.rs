@@ -181,7 +181,7 @@ mod imp {
                     };
                     let calendar_name = calendar_cursor.string(2).unwrap();
 
-                    let calendar = Calendar::new(&calendar_name, calendar_color);
+                    let calendar = Calendar::new(&calendar_uri, &calendar_name, calendar_color);
                     self.resource_pool().insert(
                         calendar_uri.to_string(),
                         Resource::Calendar(calendar.clone()),
@@ -277,7 +277,8 @@ mod imp {
                 let collection_uri = pre_calendar.collection_uri.clone();
 
                 if let Some(Resource::Collection(collection)) = resource_pool.get(&collection_uri) {
-                    let calendar = Calendar::new(&pre_calendar.name, pre_calendar.color);
+                    let calendar =
+                        Calendar::new(&pre_calendar.uri, &pre_calendar.name, pre_calendar.color);
                     collection.add_calendar(&calendar);
                     resource_pool.insert(calendar_uri, Resource::Calendar(calendar));
 
@@ -334,6 +335,10 @@ impl Manager {
 
     pub fn collections(&self) -> ListStore {
         self.imp().collections().clone()
+    }
+
+    pub fn find_resource(&self, uri: &str) -> Option<Resource> {
+        self.imp().resource_pool().get(uri).cloned()
     }
 }
 

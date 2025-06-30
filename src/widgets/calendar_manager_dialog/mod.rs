@@ -2,13 +2,15 @@ use std::cell::OnceCell;
 
 use adw::subclass::prelude::*;
 use gtk::{glib, prelude::*};
+use tracing::error;
 
+mod calendar_details_page;
 mod calendar_row;
 mod collection_row;
 mod collections_list;
 
-use self::collections_list::CollectionsList;
-use crate::core::Manager;
+use self::{calendar_details_page::CalendarDetailsPage, collections_list::CollectionsList};
+use crate::core::{Manager, Resource};
 
 mod imp {
     use super::*;
@@ -19,6 +21,8 @@ mod imp {
     pub struct CalendarManagerDialog {
         #[property(get, set, construct_only)]
         manager: OnceCell<Manager>,
+        #[template_child]
+        navigation_view: TemplateChild<adw::NavigationView>,
         #[template_child]
         collections_list: TemplateChild<CollectionsList>,
     }
@@ -34,14 +38,27 @@ mod imp {
 
             klass.install_action(
                 "calendar-manager.show-calendar-subpage",
-                None,
-                |_obj, _, _param| {
-                    // let subpage = param
-                    //     .and_then(glib::Variant::get::<AccountSettingsSubpage>)
-                    //     .expect("The parameter should be a valid subpage name");
+                Some(&String::static_variant_type()),
+                |obj, _, param| {
+                    let resource = match param
+                        .and_then(glib::Variant::get::<String>)
+                        .and_then(|uri| obj.manager().find_resource(&uri))
+                    {
+                        Some(resource) => resource,
+                        None => {
+                            error!("Invalid resource URI");
+                            return;
+                        }
+                    };
 
-                    // obj.show_subpage(subpage);
-                    dbg!("todo");
+                    let Resource::Calendar(calendar) = resource else {
+                        error!("Invalid resource type");
+                        return;
+                    };
+
+                    obj.imp()
+                        .navigation_view
+                        .push(&CalendarDetailsPage::new(&calendar));
                 },
             );
         }
