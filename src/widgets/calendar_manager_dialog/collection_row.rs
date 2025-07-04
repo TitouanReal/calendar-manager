@@ -43,7 +43,16 @@ mod imp {
     impl ObjectImpl for CollectionRow {
         fn constructed(&self) {
             self.parent_constructed();
-            self.obj().setup_widget();
+
+            let collection = self
+                .obj()
+                .collection()
+                .expect("collection should be initialized");
+
+            self.calendars_list
+                .bind_model(Some(&collection.calendars()), |calendar| {
+                    CalendarRow::new(calendar.downcast_ref().unwrap()).upcast()
+                });
         }
     }
     impl WidgetImpl for CollectionRow {}
@@ -52,7 +61,7 @@ mod imp {
     #[gtk::template_callbacks]
     impl CollectionRow {
         #[template_callback]
-        fn create_calendar(&self) {
+        fn open_calendar_creation_dialog(&self) {
             let dialog = CalendarCreationDialog::new(
                 &self
                     .obj()
@@ -60,6 +69,16 @@ mod imp {
                     .expect("collection should be initialized"),
             );
             dialog.present(Some(&*self.obj()));
+        }
+
+        #[template_callback]
+        fn list_is_empty(&self, n_items: u32) -> bool {
+            n_items == 0
+        }
+
+        #[template_callback]
+        fn list_is_not_empty(&self, n_items: u32) -> bool {
+            n_items > 0
         }
     }
 }
@@ -74,15 +93,5 @@ impl CollectionRow {
         glib::Object::builder()
             .property("collection", collection)
             .build()
-    }
-
-    fn setup_widget(&self) {
-        let imp = self.imp();
-        let collection = self.collection().expect("collection should be initialized");
-
-        imp.calendars_list
-            .bind_model(Some(&collection.calendars()), |calendar| {
-                CalendarRow::new(calendar.downcast_ref().unwrap()).upcast()
-            });
     }
 }

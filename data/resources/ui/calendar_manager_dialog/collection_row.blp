@@ -1,4 +1,6 @@
 using Gtk 4.0;
+using Gio 2.0;
+using Adw 1;
 
 template $CollectionRow: ListBoxRow {
   activatable: false;
@@ -9,15 +11,7 @@ template $CollectionRow: ListBoxRow {
   Box {
     orientation: vertical;
     vexpand: true;
-    // Adw.PreferencesGroup preferences_group {
-    //   title: _("b");
-    //   header-suffix: Button {
-    //     icon-name: "plus-large-symbolic";
-    //   };
-    //   Adw.ActionRow {
-    //     title: _("a");
-    //   }
-    // }
+
     Box {
       orientation: horizontal;
       hexpand: true;
@@ -37,7 +31,7 @@ template $CollectionRow: ListBoxRow {
         icon-name: "plus-large-symbolic";
         halign: end;
         hexpand: true;
-        clicked => $create_calendar(template);
+        clicked => $open_calendar_creation_dialog(template);
 
         styles [
           "flat",
@@ -45,7 +39,22 @@ template $CollectionRow: ListBoxRow {
       }
     }
 
+    ListBox {
+      visible: bind $list_is_empty(template.collection as <$Collection>.calendars as <Gio.ListStore>.n-items) as <bool>;
+      vexpand: true;
+      selection-mode: none;
+
+      Adw.ActionRow {
+        title: _("No Calendar in This Collection");
+      }
+
+      styles [
+        "boxed-list",
+      ]
+    }
+
     ListBox calendars_list {
+      visible: bind $list_is_not_empty(template.collection as <$Collection>.calendars as <Gio.ListStore>.n-items) as <bool>;
       vexpand: true;
       selection-mode: none;
 
