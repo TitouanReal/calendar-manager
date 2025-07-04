@@ -1,16 +1,17 @@
 use std::cell::OnceCell;
 
 use adw::subclass::prelude::*;
+use ccm::{Manager, Resource};
 use gtk::{glib, prelude::*};
 use tracing::error;
 
+mod calendar_creation_dialog;
 mod calendar_details_page;
 mod calendar_row;
 mod collection_row;
 mod collections_list;
 
 use self::{calendar_details_page::CalendarDetailsPage, collections_list::CollectionsList};
-use crate::core::{Manager, Resource};
 
 mod imp {
     use super::*;
@@ -61,6 +62,10 @@ mod imp {
                         .push(&CalendarDetailsPage::new(&calendar));
                 },
             );
+
+            klass.install_action("calendar-manager.close-subpage", None, |obj, _, _| {
+                obj.imp().navigation_view.pop();
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {

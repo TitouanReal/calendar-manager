@@ -1,9 +1,8 @@
 use std::cell::RefCell;
 
 use adw::{prelude::*, subclass::prelude::*};
-use gtk::glib::{self};
-
-use crate::core::Calendar;
+use ccm::Calendar;
+use gtk::glib::{self, clone};
 
 mod imp {
     use super::*;
@@ -36,13 +35,30 @@ mod imp {
     impl ObjectImpl for CalendarDetailsPage {
         fn constructed(&self) {
             self.parent_constructed();
+
+            let calendar = self.obj().calendar().unwrap();
+            calendar.connect_deleted(clone!(
+                #[weak(rename_to = imp)]
+                self,
+                move |_| {
+                    let _ = imp
+                        .obj()
+                        .activate_action("calendar-manager.close-subpage", None);
+                }
+            ));
         }
     }
     impl WidgetImpl for CalendarDetailsPage {}
     impl NavigationPageImpl for CalendarDetailsPage {}
 
     #[gtk::template_callbacks]
-    impl CalendarDetailsPage {}
+    impl CalendarDetailsPage {
+        #[template_callback]
+        fn delete_calendar(&self) {
+            let calendar = self.obj().calendar().unwrap();
+            calendar.delete();
+        }
+    }
 }
 
 glib::wrapper! {

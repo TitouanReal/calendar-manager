@@ -1,12 +1,13 @@
 use std::cell::RefCell;
 
 use adw::{prelude::*, subclass::prelude::*};
+use ccm::Calendar;
 use gtk::{
     gdk::{Paintable, RGBA},
     glib,
 };
 
-use crate::{core::Calendar, utils::get_circle_paintable_from_color};
+use crate::utils::get_circle_paintable_from_color;
 
 mod imp {
     use super::*;

@@ -1,8 +1,8 @@
 use adw::prelude::*;
+use ccm::Collection;
 use gtk::{gio::ListStore, glib, subclass::prelude::*};
 
 use super::collection_row::CollectionRow;
-use crate::core::Collection;
 
 mod imp {
     use super::*;

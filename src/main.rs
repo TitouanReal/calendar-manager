@@ -1,6 +1,5 @@
 mod application;
 mod config;
-mod core;
 mod utils;
 mod widgets;
 
@@ -10,14 +9,14 @@ use config::{GETTEXT_PACKAGE, LOCALEDIR, PKGDATADIR};
 use gettextrs::{bind_textdomain_codeset, bindtextdomain, textdomain};
 use gtk::prelude::*;
 use gtk::{gio, glib};
-use tracing_subscriber::{fmt, prelude::*, EnvFilter};
+use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 
 fn main() -> glib::ExitCode {
     // Initialize logger, debug is carried out via debug!, info!, warn! and error!.
     // Default to the INFO level for this crate and WARN for everything else.
     // It can be overridden with the RUST_LOG environment variable.
     let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new("calendar_manager=info,warn"));
+        .unwrap_or_else(|_| EnvFilter::new("calendar_manager=info,ccm=info,warn"));
 
     tracing_subscriber::registry()
         .with(fmt::layer().with_filter(env_filter))

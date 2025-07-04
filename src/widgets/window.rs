@@ -1,9 +1,10 @@
 use std::cell::OnceCell;
 
 use adw::{prelude::*, subclass::prelude::*};
+use ccm::Manager;
 use gtk::{gdk, gio, glib};
 
-use crate::{core::Manager, widgets::CalendarManagerDialog};
+use crate::widgets::CalendarManagerDialog;
 
 pub(crate) mod imp {
     use super::*;

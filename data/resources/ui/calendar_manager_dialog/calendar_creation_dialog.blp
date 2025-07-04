@@ -1,0 +1,55 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CalendarCreationDialog: Adw.Dialog {
+  title: _("Create Calendar");
+  content-height: 500;
+  content-width: 500;
+
+  Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      show-start-title-buttons: false;
+      show-end-title-buttons: false;
+
+      Button cancel {
+        use-underline: true;
+        label: _("_Cancel");
+        action-name: "window.close";
+      }
+
+      [end]
+      Button create {
+        use-underline: true;
+        label: _("_Create");
+        clicked => $create_calendar(template);
+
+        styles [
+          "suggested-action",
+        ]
+      }
+    }
+
+    content: Adw.PreferencesPage {
+      Adw.PreferencesGroup {
+        Adw.EntryRow name {
+          title: _("Name");
+        }
+
+        Adw.ActionRow {
+          title: _("Color");
+          activatable-widget: color;
+
+          ColorDialogButton color {
+            valign: center;
+
+            dialog: ColorDialog {
+              modal: true;
+              with-alpha: false;
+            };
+          }
+        }
+      }
+    };
+  }
+}

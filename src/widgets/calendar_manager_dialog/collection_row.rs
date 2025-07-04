@@ -1,10 +1,10 @@
 use std::cell::RefCell;
 
 use adw::prelude::*;
+use ccm::Collection;
 use gtk::{glib, subclass::prelude::*};
 
-use super::calendar_row::CalendarRow;
-use crate::core::Collection;
+use super::{calendar_creation_dialog::CalendarCreationDialog, calendar_row::CalendarRow};
 
 mod imp {
     use super::*;
@@ -53,7 +53,13 @@ mod imp {
     impl CollectionRow {
         #[template_callback]
         fn create_calendar(&self) {
-            dbg!("todo");
+            let dialog = CalendarCreationDialog::new(
+                &self
+                    .obj()
+                    .collection()
+                    .expect("collection should be initialized"),
+            );
+            dialog.present(Some(&*self.obj()));
         }
     }
 }

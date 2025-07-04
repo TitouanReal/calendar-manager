@@ -31,6 +31,17 @@ template $CalendarDetailsPage: Adw.NavigationPage {
           }
         }
       }
+
+      Adw.PreferencesGroup {
+        Adw.ButtonRow {
+          title: _("Delete Calendar");
+          activated => $delete_calendar(template);
+
+          styles [
+            "destructive-action",
+          ]
+        }
+      }
     };
   };
 }
