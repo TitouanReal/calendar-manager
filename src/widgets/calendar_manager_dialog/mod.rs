@@ -79,7 +79,8 @@ mod imp {
             self.parent_constructed();
 
             let manager = self.manager();
-            self.collections_list.set_model(manager.collections());
+            self.collections_list
+                .set_model(manager.collections_model().into());
         }
     }
     impl WidgetImpl for CalendarManagerDialog {}

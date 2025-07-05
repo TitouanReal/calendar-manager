@@ -48,7 +48,7 @@ template $CreateEventDialog: Adw.Dialog {
 
           header-factory: SignalListItemFactory {
             setup => $calendar_item_header_setup();
-            bind => $calendar_item_header_bind();
+            bind => $calendar_item_header_bind(template);
             unbind => $calendar_item_header_unbind();
           };
         }

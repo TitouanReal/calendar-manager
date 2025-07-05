@@ -1,0 +1,19 @@
+using Gtk 4.0;
+using Gdk 4.0;
+using Adw 1;
+
+template $CalendarComboRowItem: Box {
+  orientation: horizontal;
+  spacing: 6;
+
+  Image {
+    pixel-size: 16;
+    paintable: bind $get_color_image(template.calendar as <$Calendar>.color as <Gdk.RGBA>) as <Gdk.Paintable>;
+  }
+
+  Label {
+    ellipsize: end;
+    xalign: 0.0;
+    label: bind template.calendar as <$Calendar>.name;
+  }
+}

@@ -2,6 +2,7 @@ use gtk::{gdk, graphene, gsk, prelude::*};
 
 mod macros;
 
+// TODO: Is the size really useful?
 pub fn get_circle_paintable_from_color(color: &gdk::RGBA, size: f32) -> gdk::Paintable {
     let snapshot = gtk::Snapshot::new();
 

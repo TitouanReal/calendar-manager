@@ -10,6 +10,8 @@ blueprints = custom_target(
         'resources/ui/calendar_manager_dialog/collections_list.blp',
 
         # Create Event Dialog
+        'resources/ui/create_event_dialog/calendar_combo_row_header.blp',
+        'resources/ui/create_event_dialog/calendar_combo_row_item.blp',
         'resources/ui/create_event_dialog/create_event_dialog.blp',
 
         'resources/ui/window.blp',

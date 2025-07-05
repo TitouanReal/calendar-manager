@@ -1,6 +1,6 @@
 use adw::prelude::*;
 use ccm::Collection;
-use gtk::{gio::ListStore, glib, subclass::prelude::*};
+use gtk::{gio::ListModel, glib, subclass::prelude::*};
 
 use super::collection_row::CollectionRow;
 
@@ -44,7 +44,7 @@ glib::wrapper! {
 }
 
 impl CollectionsList {
-    pub fn set_model(&self, model: ListStore) {
+    pub fn set_model(&self, model: ListModel) {
         let imp = self.imp();
 
         imp.collections_list.bind_model(Some(&model), move |obj| {
