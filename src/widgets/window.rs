@@ -4,7 +4,7 @@ use adw::{prelude::*, subclass::prelude::*};
 use ccm::Manager;
 use gtk::{gdk, gio, glib};
 
-use crate::widgets::CalendarManagerDialog;
+use crate::widgets::{CalendarManagerDialog, CreateEventDialog};
 
 pub(crate) mod imp {
     use super::*;
@@ -25,14 +25,24 @@ pub(crate) mod imp {
             klass.bind_template();
             klass.bind_template_callbacks();
 
-            klass.install_action("win.manage_calendars", None, |obj, _, _| {
+            klass.install_action("win.manage-calendars", None, |obj, _, _| {
                 obj.imp().manage_calendars();
             });
 
             klass.add_binding_action(
                 gdk::Key::M,
                 gdk::ModifierType::CONTROL_MASK | gdk::ModifierType::ALT_MASK,
-                "win.manage_calendars",
+                "win.manage-calendars",
+            );
+
+            klass.install_action("win.create-event", None, |obj, _, _| {
+                obj.imp().create_event();
+            });
+
+            klass.add_binding_action(
+                gdk::Key::N,
+                gdk::ModifierType::CONTROL_MASK,
+                "win.create-event",
             );
         }
 
@@ -62,6 +72,12 @@ pub(crate) mod imp {
         #[template_callback]
         fn manage_calendars(&self) {
             let dialog = CalendarManagerDialog::new(self.manager());
+            dialog.present(Some(&*self.obj()));
+        }
+
+        #[template_callback]
+        fn create_event(&self) {
+            let dialog = CreateEventDialog::new(self.manager());
             dialog.present(Some(&*self.obj()));
         }
     }

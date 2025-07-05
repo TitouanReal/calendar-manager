@@ -1,12 +1,17 @@
 blueprints = custom_target(
     'blueprints',
     input: files(
+        # Calendar Manager Dialog
         'resources/ui/calendar_manager_dialog/calendar_creation_dialog.blp',
         'resources/ui/calendar_manager_dialog/calendar_details_page.blp',
         'resources/ui/calendar_manager_dialog/calendar_manager_dialog.blp',
         'resources/ui/calendar_manager_dialog/calendar_row.blp',
         'resources/ui/calendar_manager_dialog/collection_row.blp',
         'resources/ui/calendar_manager_dialog/collections_list.blp',
+
+        # Create Event Dialog
+        'resources/ui/create_event_dialog/create_event_dialog.blp',
+
         'resources/ui/window.blp',
     ),
     output: '.',

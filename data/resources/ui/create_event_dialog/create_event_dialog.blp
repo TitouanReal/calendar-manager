@@ -1,0 +1,58 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CreateEventDialog: Adw.Dialog {
+  title: _("Create Event");
+  content-height: 500;
+  content-width: 500;
+
+  Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      show-start-title-buttons: false;
+      show-end-title-buttons: false;
+
+      Button cancel {
+        use-underline: true;
+        label: _("_Cancel");
+        action-name: "window.close";
+      }
+
+      [end]
+      Button create {
+        use-underline: true;
+        label: _("_Create");
+        // clicked => $create_event(template);
+        styles [
+          "suggested-action",
+        ]
+      }
+    }
+
+    content: Adw.PreferencesPage {
+      Adw.PreferencesGroup {
+        Adw.EntryRow {
+          title: _("Name");
+        }
+      }
+
+      Adw.PreferencesGroup {
+        Adw.ComboRow calendar_choice {
+          title: _("Calendar");
+
+          factory: SignalListItemFactory {
+            setup => $calendar_item_setup();
+            bind => $calendar_item_bind();
+            unbind => $calendar_item_unbind();
+          };
+
+          header-factory: SignalListItemFactory {
+            setup => $calendar_item_header_setup();
+            bind => $calendar_item_header_bind();
+            unbind => $calendar_item_header_unbind();
+          };
+        }
+      }
+    };
+  }
+}

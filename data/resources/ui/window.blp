@@ -9,18 +9,29 @@ template $CalendarManagerWindow: Adw.ApplicationWindow {
   content: Adw.ToolbarView {
     [top]
     Adw.HeaderBar {
-      [start]
-      Button {
-        icon-name: "x-office-calendar-symbolic";
-        action-name: "win.manage_calendars";
-      }
-
       [end]
       MenuButton {
         primary: true;
         icon-name: "open-menu-symbolic";
         tooltip-text: _("Main Menu");
         menu-model: primary_menu;
+      }
+    }
+
+    [bottom]
+    ActionBar {
+      [end]
+      Button {
+        icon-name: "list-add-symbolic";
+        tooltip-text: _("Add Event");
+        action-name: "win.create-event";
+      }
+
+      [end]
+      Button {
+        icon-name: "x-office-calendar-symbolic";
+        tooltip-text: _("Manage Calendars");
+        action-name: "win.manage-calendars";
       }
     }
   };

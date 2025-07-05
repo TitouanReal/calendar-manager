@@ -11,7 +11,7 @@ mod imp {
     #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/collections_list.ui")]
     pub struct CollectionsList {
         #[template_child]
-        pub providers_list: TemplateChild<gtk::ListBox>,
+        pub collections_list: TemplateChild<gtk::ListBox>,
     }
 
     #[glib::object_subclass]
@@ -47,18 +47,11 @@ impl CollectionsList {
     pub fn set_model(&self, model: ListStore) {
         let imp = self.imp();
 
-        imp.providers_list.bind_model(Some(&model), move |obj| {
-            let collection = obj.downcast_ref::<Collection>().unwrap();
-
-            let row = CollectionRow::new(collection);
-            // let row = ListBoxRow::new();
-            // let child = gtk::Label::new(Some(&provider.name()));
-            // row.set_child(Some(&child));
-            // row.set_title(&provider.name());
-            // let mut subtitle = String::new();
-            // row.set_subtitle(&subtitle);
-
-            row.upcast::<gtk::Widget>()
+        imp.collections_list.bind_model(Some(&model), move |obj| {
+            let collection = obj
+                .downcast_ref::<Collection>()
+                .expect("Model should contain only Collection objects");
+            CollectionRow::new(collection).upcast()
         });
     }
 }
