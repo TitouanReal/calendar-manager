@@ -1,5 +1,6 @@
 use adw::prelude::*;
 use adw::subclass::prelude::*;
+use ccm::Manager;
 use gettextrs::gettext;
 use gtk::{gio, glib};
 
@@ -10,7 +11,9 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct CalendarManagerApplication {}
+    pub struct CalendarManagerApplication {
+        pub manager: Manager,
+    }
 
     #[glib::object_subclass]
     impl ObjectSubclass for CalendarManagerApplication {
@@ -68,6 +71,10 @@ impl CalendarManagerApplication {
             .build()
     }
 
+    pub fn manager(&self) -> Manager {
+        self.imp().manager.clone()
+    }
+
     fn setup_gactions(&self) {
         let quit_action = gio::ActionEntry::builder("quit")
             .activate(move |app: &Self, _, _| app.quit())
@@ -92,5 +99,13 @@ impl CalendarManagerApplication {
             .build();
 
         about.present(Some(&window));
+    }
+}
+
+impl Default for CalendarManagerApplication {
+    fn default() -> Self {
+        gio::Application::default()
+            .and_downcast()
+            .expect("application should always be available")
     }
 }

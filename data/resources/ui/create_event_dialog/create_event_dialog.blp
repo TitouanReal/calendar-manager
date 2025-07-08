@@ -37,21 +37,7 @@ template $CreateEventDialog: Adw.Dialog {
       }
 
       Adw.PreferencesGroup {
-        Adw.ComboRow calendar_choice {
-          title: _("Calendar");
-
-          factory: SignalListItemFactory {
-            setup => $calendar_item_setup();
-            bind => $calendar_item_bind();
-            unbind => $calendar_item_unbind();
-          };
-
-          header-factory: SignalListItemFactory {
-            setup => $calendar_item_header_setup();
-            bind => $calendar_item_header_bind(template);
-            unbind => $calendar_item_header_unbind();
-          };
-        }
+        $CalendarComboRow calendar_choice {}
       }
     };
   }

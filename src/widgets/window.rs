@@ -1,7 +1,4 @@
-use std::cell::OnceCell;
-
 use adw::{prelude::*, subclass::prelude::*};
-use ccm::Manager;
 use gtk::{gdk, gio, glib};
 
 use crate::widgets::{CalendarManagerDialog, CreateEventDialog};
@@ -11,9 +8,7 @@ pub(crate) mod imp {
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/window.ui")]
-    pub struct CalendarManagerWindow {
-        manager: OnceCell<Manager>,
-    }
+    pub struct CalendarManagerWindow {}
 
     #[glib::object_subclass]
     impl ObjectSubclass for CalendarManagerWindow {
@@ -55,9 +50,10 @@ pub(crate) mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            self.manager.get_or_init(Manager::new);
+            // self.manager.get_or_init(Manager::new);
         }
     }
+
     impl WidgetImpl for CalendarManagerWindow {}
     impl WindowImpl for CalendarManagerWindow {}
     impl ApplicationWindowImpl for CalendarManagerWindow {}
@@ -65,19 +61,19 @@ pub(crate) mod imp {
 
     #[gtk::template_callbacks]
     impl CalendarManagerWindow {
-        fn manager(&self) -> &Manager {
-            self.manager.get().expect("manager should be initialized")
-        }
+        // fn manager(&self) -> &Manager {
+        //     self.manager.get().expect("manager should be initialized")
+        // }
 
         #[template_callback]
         fn manage_calendars(&self) {
-            let dialog = CalendarManagerDialog::new(self.manager());
+            let dialog = CalendarManagerDialog::new();
             dialog.present(Some(&*self.obj()));
         }
 
         #[template_callback]
         fn create_event(&self) {
-            let dialog = CreateEventDialog::new(self.manager());
+            let dialog = CreateEventDialog::new();
             dialog.present(Some(&*self.obj()));
         }
     }

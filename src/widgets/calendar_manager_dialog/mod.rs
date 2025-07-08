@@ -1,7 +1,5 @@
-use std::cell::OnceCell;
-
 use adw::subclass::prelude::*;
-use ccm::{Manager, Resource};
+use ccm::Resource;
 use gtk::{glib, prelude::*};
 use tracing::error;
 
@@ -14,14 +12,13 @@ mod collections_list;
 use self::{calendar_details_page::CalendarDetailsPage, collections_list::CollectionsList};
 
 mod imp {
+    use crate::application::CalendarManagerApplication;
+
     use super::*;
 
-    #[derive(Debug, Default, gtk::CompositeTemplate, glib::Properties)]
+    #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/calendar_manager_dialog.ui")]
-    #[properties(wrapper_type = super::CalendarManagerDialog)]
     pub struct CalendarManagerDialog {
-        #[property(get, set, construct_only)]
-        manager: OnceCell<Manager>,
         #[template_child]
         navigation_view: TemplateChild<adw::NavigationView>,
         #[template_child]
@@ -41,16 +38,19 @@ mod imp {
                 "calendar-manager.show-calendar-subpage",
                 Some(&String::static_variant_type()),
                 |obj, _, param| {
-                    let resource = match param
-                        .and_then(glib::Variant::get::<String>)
-                        .and_then(|uri| obj.manager().find_resource(&uri))
-                    {
-                        Some(resource) => resource,
-                        None => {
-                            error!("Invalid resource URI");
-                            return;
-                        }
-                    };
+                    let resource =
+                        match param
+                            .and_then(glib::Variant::get::<String>)
+                            .and_then(|uri| {
+                                let manager = CalendarManagerApplication::default().manager();
+                                manager.find_resource(&uri)
+                            }) {
+                            Some(resource) => resource,
+                            None => {
+                                error!("Invalid resource URI");
+                                return;
+                            }
+                        };
 
                     let Resource::Calendar(calendar) = resource else {
                         error!("Invalid resource type");
@@ -73,12 +73,11 @@ mod imp {
         }
     }
 
-    #[glib::derived_properties]
     impl ObjectImpl for CalendarManagerDialog {
         fn constructed(&self) {
             self.parent_constructed();
 
-            let manager = self.manager();
+            let manager = CalendarManagerApplication::default().manager();
             self.collections_list
                 .set_model(manager.collections_model().into());
         }
@@ -86,11 +85,7 @@ mod imp {
     impl WidgetImpl for CalendarManagerDialog {}
     impl AdwDialogImpl for CalendarManagerDialog {}
 
-    impl CalendarManagerDialog {
-        fn manager(&self) -> &Manager {
-            self.manager.get().expect("manager should be initialized")
-        }
-    }
+    impl CalendarManagerDialog {}
 }
 
 glib::wrapper! {
@@ -99,7 +94,13 @@ glib::wrapper! {
 }
 
 impl CalendarManagerDialog {
-    pub fn new(manager: &Manager) -> Self {
-        glib::Object::builder().property("manager", manager).build()
+    pub fn new() -> Self {
+        glib::Object::builder().build()
+    }
+}
+
+impl Default for CalendarManagerDialog {
+    fn default() -> Self {
+        Self::new()
     }
 }
