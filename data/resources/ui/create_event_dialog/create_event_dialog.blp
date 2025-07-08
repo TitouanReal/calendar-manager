@@ -22,7 +22,8 @@ template $CreateEventDialog: Adw.Dialog {
       Button create {
         use-underline: true;
         label: _("_Create");
-        // clicked => $create_event(template);
+        sensitive: false;
+
         styles [
           "suggested-action",
         ]
@@ -31,7 +32,7 @@ template $CreateEventDialog: Adw.Dialog {
 
     content: Adw.PreferencesPage {
       Adw.PreferencesGroup {
-        Adw.EntryRow {
+        Adw.EntryRow name {
           title: _("Name");
         }
       }

@@ -5,14 +5,14 @@ template $CalendarComboRow: Adw.ComboRow {
   title: _("Calendar");
 
   factory: SignalListItemFactory {
-    setup => $calendar_item_setup();
     bind => $calendar_item_bind();
-    unbind => $calendar_item_unbind();
   };
 
   header-factory: SignalListItemFactory {
-    setup => $calendar_item_header_setup();
-    bind => $calendar_item_header_bind(template);
-    unbind => $calendar_item_header_unbind();
+    bind => $calendar_list_header_bind(template);
+  };
+
+  list-factory: SignalListItemFactory {
+    bind => $calendar_list_item_bind(template);
   };
 }

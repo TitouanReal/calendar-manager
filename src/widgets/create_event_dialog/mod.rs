@@ -12,6 +12,8 @@ mod imp {
     #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/create_event_dialog.ui")]
     pub struct CreateEventDialog {
         #[template_child]
+        name: TemplateChild<adw::EntryRow>,
+        #[template_child]
         calendar_choice: TemplateChild<CalendarComboRow>,
     }
 
@@ -31,8 +33,8 @@ mod imp {
         }
     }
 
+    // TODO: Call adw_entry_row_grab_focus_without_selecting on the name entry row
     impl ObjectImpl for CreateEventDialog {}
-
     impl WidgetImpl for CreateEventDialog {}
     impl AdwDialogImpl for CreateEventDialog {}
 

@@ -1,7 +1,7 @@
 using Gtk 4.0;
 using Gdk 4.0;
 
-template $CalendarComboRowItem: Box {
+template $CalendarComboRowListItem: Box {
   orientation: horizontal;
   spacing: 6;
 
@@ -14,5 +14,10 @@ template $CalendarComboRowItem: Box {
     ellipsize: end;
     xalign: 0.0;
     label: bind template.calendar as <$Calendar>.name;
+  }
+
+  Image {
+    icon-name: "object-select-symbolic";
+    visible: bind template.selected;
   }
 }

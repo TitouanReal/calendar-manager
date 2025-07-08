@@ -4,6 +4,7 @@ use adw::{prelude::*, subclass::prelude::*};
 use ccm::Calendar;
 use gtk::glib::{self, clone};
 
+// Expose an update API in ccm-daemon and use it here
 mod imp {
     use super::*;
 

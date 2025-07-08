@@ -1,17 +1,21 @@
 use std::cell::OnceCell;
 
 use adw::{prelude::*, subclass::prelude::*};
-use ccm::{Calendar, Collection};
-use gtk::{FlattenListModel, glib};
+use gtk::{
+    FlattenListModel,
+    glib::{self, clone},
+};
 
 mod calendar_combo_row_header;
 mod calendar_combo_row_item;
+mod calendar_combo_row_list_item;
 
 use crate::application::CalendarManagerApplication;
 
 use self::{
     calendar_combo_row_header::CalendarComboRowHeader,
     calendar_combo_row_item::CalendarComboRowItem,
+    calendar_combo_row_list_item::CalendarComboRowListItem,
 };
 
 mod imp {
@@ -45,6 +49,8 @@ mod imp {
 
             let manager = CalendarManagerApplication::default().manager();
 
+            // TODO: The flattened model is updated but it is not reflected in the UI as long as the
+            // combo row exists
             self.flattened_collections_model.get_or_init(|| {
                 let model = manager.collections_model();
                 FlattenListModel::new(Some(model))
@@ -63,10 +69,6 @@ mod imp {
 
     #[gtk::template_callbacks]
     impl CalendarComboRow {
-        // fn manager(&self) -> &Manager {
-        //     self.manager.get().expect("manager should be initialized")
-        // }
-
         fn flattened_collections_model(&self) -> &FlattenListModel {
             self.flattened_collections_model
                 .get()
@@ -74,31 +76,18 @@ mod imp {
         }
 
         #[template_callback]
-        fn calendar_item_setup(_factory: gtk::SignalListItemFactory, _item: gtk::ListItem) {}
-
-        #[template_callback]
         fn calendar_item_bind(_factory: gtk::SignalListItemFactory, item: gtk::ListItem) {
             let calendar = item
                 .item()
                 .expect("item should be bound")
-                .downcast::<Calendar>()
+                .downcast()
                 .expect("item should be a Calendar");
             let calendar_combo_row_item = CalendarComboRowItem::new(&calendar);
             item.set_child(Some(&calendar_combo_row_item));
         }
 
         #[template_callback]
-        fn calendar_item_unbind(_factory: gtk::SignalListItemFactory, _item: gtk::ListItem) {}
-
-        #[template_callback]
-        fn calendar_item_header_setup(
-            _factory: gtk::SignalListItemFactory,
-            _header: gtk::ListHeader,
-        ) {
-        }
-
-        #[template_callback]
-        fn calendar_item_header_bind(
+        fn calendar_list_header_bind(
             &self,
             header: gtk::ListHeader,
             _factory: gtk::SignalListItemFactory,
@@ -108,17 +97,35 @@ mod imp {
             let collection = flatten_model
                 .model_for_item(start)
                 .expect("item should exist at this position")
-                .downcast::<Collection>()
+                .downcast()
                 .expect("item should be a Collection");
             let calendar_combo_row_header = CalendarComboRowHeader::new(&collection);
             header.set_child(Some(&calendar_combo_row_header));
         }
 
         #[template_callback]
-        fn calendar_item_header_unbind(
+        fn calendar_list_item_bind(
+            &self,
+            item: gtk::ListItem,
             _factory: gtk::SignalListItemFactory,
-            _item: gtk::ListHeader,
         ) {
+            let calendar = item
+                .item()
+                .expect("item should be bound")
+                .downcast()
+                .expect("item should be a Calendar");
+            let selected = self.obj().selected_item() == item.item();
+            let calendar_combo_row_list_item = CalendarComboRowListItem::new(&calendar, selected);
+            item.set_child(Some(&calendar_combo_row_list_item));
+
+            // TODO: Is it necessary to disconnect the signal?
+            self.obj().connect_selected_notify(clone!(
+                #[weak]
+                item,
+                move |row| {
+                    calendar_combo_row_list_item.set_selected(row.selected_item() == item.item());
+                }
+            ));
         }
     }
 }

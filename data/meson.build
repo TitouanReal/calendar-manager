@@ -13,6 +13,7 @@ blueprints = custom_target(
         'resources/ui/create_event_dialog/calendar_combo_row/calendar_combo_row.blp',
         'resources/ui/create_event_dialog/calendar_combo_row/calendar_combo_row_header.blp',
         'resources/ui/create_event_dialog/calendar_combo_row/calendar_combo_row_item.blp',
+        'resources/ui/create_event_dialog/calendar_combo_row/calendar_combo_row_list_item.blp',
         'resources/ui/create_event_dialog/create_event_dialog.blp',
 
         'resources/ui/window.blp',
