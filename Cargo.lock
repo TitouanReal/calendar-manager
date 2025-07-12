@@ -77,7 +77,7 @@ dependencies = [
 [[package]]
 name = "ccm"
 version = "0.1.0"
-source = "git+https://github.com/TitouanReal/ccm#44e01adbf42b1dfd4dc5e1f1317babd009e0be25"
+source = "git+https://github.com/TitouanReal/ccm#9a519736bdc0f173a76e3a4c9f65a37b98fe0ba9"
 dependencies = [
  "gettext-rs",
  "gtk4",
@@ -1083,9 +1083,9 @@ checksum = "589f6da84c646204747d1270a2a5661ea66ed1cced2631d546fdfb155959f9ec"
 
 [[package]]
 name = "winnow"
-version = "0.7.11"
+version = "0.7.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74c7b26e3480b707944fc872477815d29a8e429d2f93a1ce000f5fa84a15cbcd"
+checksum = "f3edebf492c8125044983378ecb5766203ad3b4c2f7a922bd7dd207f6d443e95"
 dependencies = [
  "memchr",
 ]

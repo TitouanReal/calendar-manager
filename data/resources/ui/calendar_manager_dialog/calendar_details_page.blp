@@ -10,10 +10,10 @@ template $CalendarDetailsPage: Adw.NavigationPage {
 
     content: Adw.PreferencesPage {
       Adw.PreferencesGroup {
-        Adw.EntryRow {
+        Adw.EntryRow name_entry {
           title: _("Name");
-          text: bind template.calendar as <$Calendar>.name;
-          // notify::text => $on_calendar_color_changed_cb(template);
+          show-apply-button: true;
+          apply => $update_calendar_name(template);
         }
 
         Adw.ActionRow {
@@ -22,8 +22,10 @@ template $CalendarDetailsPage: Adw.NavigationPage {
 
           ColorDialogButton calendar_color_button {
             valign: center;
+            // TODO: Find a way to skip the color update on page creation
             rgba: bind template.calendar as <$Calendar>.color;
-            // notify::rgba => $on_calendar_color_changed_cb(template);
+            notify::rgba => $update_calendar_color(template);
+
             dialog: ColorDialog {
               modal: true;
               with-alpha: false;

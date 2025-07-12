@@ -4,7 +4,6 @@ use adw::{prelude::*, subclass::prelude::*};
 use ccm::Calendar;
 use gtk::glib::{self, clone};
 
-// Expose an update API in ccm-daemon and use it here
 mod imp {
     use super::*;
 
@@ -14,6 +13,10 @@ mod imp {
     pub struct CalendarDetailsPage {
         #[property(get, set, construct_only)]
         pub calendar: RefCell<Option<Calendar>>,
+        #[template_child]
+        pub name_entry: TemplateChild<adw::EntryRow>,
+        #[template_child]
+        pub calendar_color_button: TemplateChild<gtk::ColorDialogButton>,
     }
 
     #[glib::object_subclass]
@@ -38,6 +41,21 @@ mod imp {
             self.parent_constructed();
 
             let calendar = self.obj().calendar().unwrap();
+
+            self.name_entry.set_text(&calendar.name());
+
+            calendar.connect_name_notify(clone!(
+                #[weak(rename_to = imp)]
+                self,
+                move |calendar| {
+                    let name = calendar.name();
+                    let old_name = imp.name_entry.text();
+                    if name != old_name {
+                        imp.name_entry.set_text(&name);
+                    }
+                }
+            ));
+
             calendar.connect_deleted(clone!(
                 #[weak(rename_to = imp)]
                 self,
@@ -49,11 +67,26 @@ mod imp {
             ));
         }
     }
+
     impl WidgetImpl for CalendarDetailsPage {}
     impl NavigationPageImpl for CalendarDetailsPage {}
 
     #[gtk::template_callbacks]
     impl CalendarDetailsPage {
+        #[template_callback]
+        fn update_calendar_name(&self) {
+            let calendar = self.obj().calendar().unwrap();
+            let name = self.name_entry.text();
+            calendar.update(Some(&name), None);
+        }
+
+        #[template_callback]
+        fn update_calendar_color(&self) {
+            let calendar = self.obj().calendar().unwrap();
+            let color = self.calendar_color_button.rgba();
+            calendar.update(None, Some(color));
+        }
+
         #[template_callback]
         fn delete_calendar(&self) {
             let calendar = self.obj().calendar().unwrap();

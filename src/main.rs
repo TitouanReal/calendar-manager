@@ -16,7 +16,7 @@ fn main() -> glib::ExitCode {
     // Default to the INFO level for this crate and WARN for everything else.
     // It can be overridden with the RUST_LOG environment variable.
     let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new("calendar_manager=info,ccm=info,warn"));
+        .unwrap_or_else(|_| EnvFilter::new("calendar_manager=debug,ccm=debug,warn"));
 
     tracing_subscriber::registry()
         .with(fmt::layer().with_filter(env_filter))

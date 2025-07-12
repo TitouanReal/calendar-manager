@@ -54,10 +54,14 @@ mod imp {
         fn show_calendar_subpage(&self) {
             let obj = self.obj();
 
-            // TODO: Clean this mess
             let _ = obj.activate_action(
                 "calendar-manager.show-calendar-subpage",
-                Some(&self.calendar.borrow().as_ref().unwrap().uri().to_variant()),
+                Some(
+                    &obj.calendar()
+                        .expect("Calendar should be initialized")
+                        .uri()
+                        .to_variant(),
+                ),
             );
         }
 
