@@ -3,7 +3,7 @@ use gtk::glib;
 
 mod calendar_combo_row;
 
-use calendar_combo_row::CalendarComboRow;
+use self::calendar_combo_row::CalendarComboRow;
 
 mod imp {
     use super::*;
@@ -39,7 +39,21 @@ mod imp {
     impl AdwDialogImpl for CreateEventDialog {}
 
     #[gtk::template_callbacks]
-    impl CreateEventDialog {}
+    impl CreateEventDialog {
+        #[template_callback]
+        fn create_event(&self) {
+            // TODO: Fix this
+            dbg!("todo");
+            // let calendar: Calendar = self
+            //     .calendar_choice
+            //     .selected_item()
+            //     .expect("There should be a selected item")
+            //     .downcast()
+            //     .expect("Selected item should be a Calendar");
+            // calendar.create_event(&self.name.text());
+            // self.obj().close();
+        }
+    }
 }
 
 glib::wrapper! {

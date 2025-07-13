@@ -106,6 +106,6 @@ impl Default for CalendarManagerApplication {
     fn default() -> Self {
         gio::Application::default()
             .and_downcast()
-            .expect("application should always be available")
+            .expect("Application should always be available")
     }
 }

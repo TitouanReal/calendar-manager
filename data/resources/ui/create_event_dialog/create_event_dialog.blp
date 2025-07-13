@@ -23,6 +23,7 @@ template $CreateEventDialog: Adw.Dialog {
         use-underline: true;
         label: _("_Create");
         sensitive: false;
+        clicked => $create_event(template);
 
         styles [
           "suggested-action",

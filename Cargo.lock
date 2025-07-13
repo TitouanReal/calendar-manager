@@ -77,7 +77,7 @@ dependencies = [
 [[package]]
 name = "ccm"
 version = "0.1.0"
-source = "git+https://github.com/TitouanReal/ccm#9a519736bdc0f173a76e3a4c9f65a37b98fe0ba9"
+source = "git+https://github.com/TitouanReal/ccm#7e4b50f372282a974c32ff8d78565985af7d5e6f"
 dependencies = [
  "gettext-rs",
  "gtk4",
