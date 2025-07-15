@@ -16,6 +16,7 @@ mod imp {
     #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/calendar_combo_row_list_item.ui")]
     #[properties(wrapper_type = super::CalendarComboRowListItem)]
     pub struct CalendarComboRowListItem {
+        // TODO: keep pub?
         #[property(get, set)]
         pub calendar: RefCell<Option<Calendar>>,
         #[property(get, set)]

@@ -1,7 +1,7 @@
 use adw::{prelude::*, subclass::prelude::*};
 use gtk::{gdk, gio, glib};
 
-use crate::widgets::{CalendarManagerDialog, CreateEventDialog};
+use crate::widgets::{CalendarManagerDialog, CreateEventDialog, SearchDialog};
 
 pub(crate) mod imp {
     use super::*;
@@ -19,6 +19,16 @@ pub(crate) mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
             klass.bind_template_callbacks();
+
+            klass.install_action("win.search-events", None, |obj, _, _| {
+                obj.imp().search_events();
+            });
+
+            klass.add_binding_action(
+                gdk::Key::F,
+                gdk::ModifierType::CONTROL_MASK,
+                "win.search-events",
+            );
 
             klass.install_action("win.manage-calendars", None, |obj, _, _| {
                 obj.imp().manage_calendars();
@@ -49,8 +59,6 @@ pub(crate) mod imp {
     impl ObjectImpl for CalendarManagerWindow {
         fn constructed(&self) {
             self.parent_constructed();
-
-            // self.manager.get_or_init(Manager::new);
         }
     }
 
@@ -61,9 +69,11 @@ pub(crate) mod imp {
 
     #[gtk::template_callbacks]
     impl CalendarManagerWindow {
-        // fn manager(&self) -> &Manager {
-        //     self.manager.get().expect("manager should be initialized")
-        // }
+        #[template_callback]
+        fn search_events(&self) {
+            let dialog = SearchDialog::new();
+            dialog.present(Some(&*self.obj()));
+        }
 
         #[template_callback]
         fn manage_calendars(&self) {

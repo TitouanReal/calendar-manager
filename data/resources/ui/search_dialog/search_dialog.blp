@@ -1,0 +1,31 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $SearchDialog: Adw.Dialog {
+  content-height: 500;
+  content-width: 500;
+
+  Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      title-widget: SearchEntry search_entry {
+        placeholder-text: _("Search");
+        search-changed => $search_events(template);
+      };
+    }
+
+    content: ScrolledWindow {
+      Adw.Clamp {
+        ListView results_view {
+          factory: SignalListItemFactory {
+            bind => $event_item_bind();
+          };
+
+          styles [
+            "providers-list",
+          ]
+        }
+      }
+    };
+  }
+}

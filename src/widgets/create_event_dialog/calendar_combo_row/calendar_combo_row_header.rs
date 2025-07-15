@@ -32,11 +32,7 @@ mod imp {
     }
 
     #[glib::derived_properties]
-    impl ObjectImpl for CalendarComboRowHeader {
-        fn constructed(&self) {
-            self.parent_constructed();
-        }
-    }
+    impl ObjectImpl for CalendarComboRowHeader {}
     impl WidgetImpl for CalendarComboRowHeader {}
     impl BoxImpl for CalendarComboRowHeader {}
 

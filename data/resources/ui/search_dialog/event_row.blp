@@ -1,0 +1,48 @@
+using Gtk 4.0;
+// using Gdk 4.0;
+template $EventRow: Box {
+  // Image {
+  //   pixel-size: 16;
+  //   paintable: bind $get_color_image(template.event as <$Event>.calendar as <$Calendar>.color as <Gdk.RGBA>) as <Gdk.Paintable>;
+  // }
+  Box {
+    orientation: vertical;
+
+    Label {
+      label: bind template.event as <$Event>.name;
+      vexpand: true;
+      valign: center;
+    }
+
+    Label {
+      label: "location";
+      xalign: 0.0;
+
+      styles [
+        "dim-label",
+      ]
+    }
+  }
+
+  Box {
+    orientation: vertical;
+    hexpand: true;
+    halign: end;
+
+    Label {
+      label: "start time";
+      xalign: 1.0;
+      vexpand: true;
+      valign: center;
+    }
+
+    Label {
+      label: "end time";
+      xalign: 1.0;
+
+      styles [
+        "dim-label",
+      ]
+    }
+  }
+}

@@ -1,4 +1,5 @@
-use adw::subclass::prelude::*;
+use adw::{prelude::*, subclass::prelude::*};
+use ccm::Calendar;
 use gtk::glib;
 
 mod calendar_combo_row;
@@ -15,6 +16,8 @@ mod imp {
         name: TemplateChild<adw::EntryRow>,
         #[template_child]
         calendar_choice: TemplateChild<CalendarComboRow>,
+        #[template_child]
+        description: TemplateChild<adw::EntryRow>,
     }
 
     #[glib::object_subclass]
@@ -42,16 +45,14 @@ mod imp {
     impl CreateEventDialog {
         #[template_callback]
         fn create_event(&self) {
-            // TODO: Fix this
-            dbg!("todo");
-            // let calendar: Calendar = self
-            //     .calendar_choice
-            //     .selected_item()
-            //     .expect("There should be a selected item")
-            //     .downcast()
-            //     .expect("Selected item should be a Calendar");
-            // calendar.create_event(&self.name.text());
-            // self.obj().close();
+            let calendar: Calendar = self
+                .calendar_choice
+                .selected_item()
+                .expect("There should be a selected item")
+                .downcast()
+                .expect("Selected item should be a Calendar");
+            calendar.create_event(&self.name.text(), &self.description.text());
+            self.obj().close();
         }
     }
 }

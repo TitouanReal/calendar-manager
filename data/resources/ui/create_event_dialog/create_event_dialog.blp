@@ -22,7 +22,6 @@ template $CreateEventDialog: Adw.Dialog {
       Button create {
         use-underline: true;
         label: _("_Create");
-        sensitive: false;
         clicked => $create_event(template);
 
         styles [
@@ -40,6 +39,12 @@ template $CreateEventDialog: Adw.Dialog {
 
       Adw.PreferencesGroup {
         $CalendarComboRow calendar_choice {}
+      }
+
+      Adw.PreferencesGroup {
+        Adw.EntryRow description {
+          title: _("Description");
+        }
       }
     };
   }

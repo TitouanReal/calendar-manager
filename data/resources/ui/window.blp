@@ -2,7 +2,7 @@ using Gtk 4.0;
 using Adw 1;
 
 template $CalendarManagerWindow: Adw.ApplicationWindow {
-  title: _("Calendar-manager");
+  title: _("Calendar Manager");
   default-width: 800;
   default-height: 600;
 
@@ -16,6 +16,17 @@ template $CalendarManagerWindow: Adw.ApplicationWindow {
         tooltip-text: _("Main Menu");
         menu-model: primary_menu;
       }
+
+      [end]
+      Button {
+        icon-name: "system-search-symbolic";
+        tooltip-text: _("Search");
+        clicked => $search_events(template);
+
+        styles [
+          "flat",
+        ]
+      }
     }
 
     [bottom]
@@ -23,7 +34,7 @@ template $CalendarManagerWindow: Adw.ApplicationWindow {
       [end]
       Button {
         icon-name: "list-add-symbolic";
-        tooltip-text: _("Add Event");
+        tooltip-text: _("Create Event");
         action-name: "win.create-event";
       }
 
@@ -40,7 +51,7 @@ template $CalendarManagerWindow: Adw.ApplicationWindow {
 menu primary_menu {
   section {
     item {
-      label: _("_About Calendar-manager");
+      label: _("_About Calendar Manager");
       action: "app.about";
     }
   }

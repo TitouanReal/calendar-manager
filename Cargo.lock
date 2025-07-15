@@ -77,11 +77,10 @@ dependencies = [
 [[package]]
 name = "ccm"
 version = "0.1.0"
-source = "git+https://github.com/TitouanReal/ccm#7e4b50f372282a974c32ff8d78565985af7d5e6f"
+source = "git+https://github.com/TitouanReal/ccm#532ae67db081905980dd022a5985d66bbb916296"
 dependencies = [
+ "gdk4",
  "gettext-rs",
- "gtk4",
- "libadwaita",
  "tracing",
  "tracker-rs",
 ]
