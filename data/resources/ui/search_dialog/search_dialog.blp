@@ -21,8 +21,10 @@ template $SearchDialog: Adw.Dialog {
             bind => $event_item_bind();
           };
 
+          activate => $open_event_details(template);
+
           styles [
-            "providers-list",
+            "events-list",
           ]
         }
       }

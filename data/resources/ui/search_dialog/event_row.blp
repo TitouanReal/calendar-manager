@@ -1,10 +1,15 @@
 using Gtk 4.0;
-// using Gdk 4.0;
+using Gdk 4.0;
+
 template $EventRow: Box {
-  // Image {
-  //   pixel-size: 16;
-  //   paintable: bind $get_color_image(template.event as <$Event>.calendar as <$Calendar>.color as <Gdk.RGBA>) as <Gdk.Paintable>;
-  // }
+  margin-top: 6;
+  margin-bottom: 6;
+
+  Image {
+    pixel-size: 24;
+    paintable: bind $get_color_image(template.event as <$Event>.calendar as <$Calendar>.color as <Gdk.RGBA>) as <Gdk.Paintable>;
+  }
+
   Box {
     orientation: vertical;
 
@@ -45,4 +50,8 @@ template $EventRow: Box {
       ]
     }
   }
+
+  styles [
+    "event-row",
+  ]
 }

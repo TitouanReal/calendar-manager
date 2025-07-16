@@ -62,6 +62,19 @@ mod imp {
             let event_row = EventRow::new(&event);
             item.set_child(Some(&event_row));
         }
+
+        #[template_callback]
+        fn open_event_details(&self, item: u32) {
+            let event = self
+                .results_view
+                .model()
+                .unwrap()
+                .item(item)
+                .unwrap()
+                .downcast::<Event>()
+                .unwrap();
+            dbg!("todo: show event details for {}", event.name());
+        }
     }
 }
 

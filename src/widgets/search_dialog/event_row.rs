@@ -7,10 +7,9 @@ use gtk::{
     glib,
 };
 
-use crate::utils::get_circle_paintable_from_color;
+use crate::utils::get_horizontal_bar_paintable_from_color;
 
 mod imp {
-
     use super::*;
 
     #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
@@ -44,10 +43,10 @@ mod imp {
 
     #[gtk::template_callbacks]
     impl EventRow {
-        // #[template_callback]
-        // fn get_color_image(&self, color: RGBA) -> Paintable {
-        //     get_circle_paintable_from_color(&color, 16.)
-        // }
+        #[template_callback]
+        fn get_color_image(&self, color: RGBA) -> Paintable {
+            get_horizontal_bar_paintable_from_color(&color, 6., 48.)
+        }
     }
 }
 
