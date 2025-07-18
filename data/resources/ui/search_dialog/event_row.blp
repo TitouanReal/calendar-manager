@@ -35,14 +35,14 @@ template $EventRow: Box {
     halign: end;
 
     Label {
-      label: "start time";
+      label: bind $get_start_time(template.event as <$Event>.timeframe as <$Timeframe>.start as <$Instant>, template.event as <$Event>.timeframe as <$Timeframe>.all_day as <bool>) as <string>;
       xalign: 1.0;
       vexpand: true;
       valign: center;
     }
 
     Label {
-      label: "end time";
+      label: bind $get_end_time(template.event as <$Event>.timeframe as <$Timeframe>.end as <$Instant>, template.event as <$Event>.timeframe as <$Timeframe>.all_day as <bool>) as <string>;
       xalign: 1.0;
 
       styles [

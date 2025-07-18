@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 
 use adw::{prelude::*, subclass::prelude::*};
-use ccm::Event;
+use ccm::{Event, Timeframe};
 use gtk::{
     gdk::{Paintable, RGBA},
     glib,
@@ -27,6 +27,8 @@ mod imp {
         type ParentType = gtk::Box;
 
         fn class_init(klass: &mut Self::Class) {
+            Timeframe::ensure_type();
+
             klass.bind_template();
             klass.bind_template_callbacks();
         }
@@ -46,6 +48,34 @@ mod imp {
         #[template_callback]
         fn get_color_image(&self, color: RGBA) -> Paintable {
             get_horizontal_bar_paintable_from_color(&color, 6., 48.)
+        }
+
+        #[template_callback]
+        fn get_start_time(&self) -> String {
+            let Some(event) = self.obj().event() else {
+                return String::new();
+            };
+            format!(
+                "{}",
+                &event
+                    .timeframe()
+                    .expect("Event should have a timeframe")
+                    .start()
+            )
+        }
+
+        #[template_callback]
+        fn get_end_time(&self) -> String {
+            let Some(event) = self.obj().event() else {
+                return String::new();
+            };
+            format!(
+                "{}",
+                &event
+                    .timeframe()
+                    .expect("Event should have a timeframe")
+                    .end()
+            )
         }
     }
 }

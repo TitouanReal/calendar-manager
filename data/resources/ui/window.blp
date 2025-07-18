@@ -6,46 +6,413 @@ template $CalendarManagerWindow: Adw.ApplicationWindow {
   default-width: 800;
   default-height: 600;
 
-  content: Adw.ToolbarView {
-    [top]
-    Adw.HeaderBar {
-      [end]
-      MenuButton {
-        primary: true;
-        icon-name: "open-menu-symbolic";
-        tooltip-text: _("Main Menu");
-        menu-model: primary_menu;
-      }
+  content: Stack layout_stack {
+    StackPage {
+      name: "wide";
 
-      [end]
-      Button {
-        icon-name: "system-search-symbolic";
-        tooltip-text: _("Search");
-        clicked => $search_events(template);
+      child: Adw.OverlaySplitView {
+        show-sidebar: bind sidebar_toggle.active bidirectional;
 
-        styles [
-          "flat",
-        ]
-      }
+        sidebar: Adw.ToolbarView {
+          [top]
+          Adw.HeaderBar {}
+
+          content: Label {
+            label: "sidebar";
+          };
+        };
+
+        content: Adw.ToolbarView {
+          [top]
+          Adw.HeaderBar {
+            [start]
+            ToggleButton sidebar_toggle {
+              icon-name: "sidebar-show-symbolic";
+              tooltip-text: _("Toggle Sidebar");
+            }
+
+            [end]
+            MenuButton {
+              primary: true;
+              icon-name: "open-menu-symbolic";
+              tooltip-text: _("Main Menu");
+              menu-model: primary_menu;
+            }
+
+            [end]
+            Button {
+              icon-name: "system-search-symbolic";
+              tooltip-text: _("Search");
+              clicked => $search_events(template);
+
+              styles [
+                "flat",
+              ]
+            }
+          }
+
+          content: Adw.ViewStack wide_view_stack {
+            Adw.ViewStackPage {
+              name: "year";
+              title: _("_Year");
+              use-underline: true;
+              icon-name: "year-symbolic";
+
+              child: Label {
+                label: "Year";
+              };
+            }
+
+            Adw.ViewStackPage {
+              name: "month";
+              title: _("_Month");
+              use-underline: true;
+              icon-name: "month-symbolic";
+
+              child: Label {
+                label: "Month";
+              };
+            }
+
+            Adw.ViewStackPage {
+              name: "week";
+              title: _("_Week");
+              use-underline: true;
+              icon-name: "week-symbolic";
+
+              child: Label {
+                label: "Week";
+              };
+            }
+
+            Adw.ViewStackPage {
+              name: "days";
+              title: _("_Days");
+              use-underline: true;
+              icon-name: "days-symbolic";
+
+              child: Label {
+                label: "Days";
+              };
+            }
+
+            Adw.ViewStackPage {
+              name: "agenda";
+              title: _("_Agenda");
+              use-underline: true;
+              icon-name: "view-list-symbolic";
+
+              child: Label {
+                label: "Agenda";
+              };
+            }
+          };
+
+          [bottom]
+          ActionBar {
+            [start]
+            Button {
+              // action-name: "win.today";
+              child: Adw.ButtonContent {
+                label: _("_Today");
+                use-underline: true;
+                icon-name: "today-symbolic";
+                can-shrink: true;
+                tooltip-text: _("Go to Today");
+              };
+            }
+
+            [center]
+            Adw.InlineViewSwitcher wide_view_switcher {
+              stack: wide_view_stack;
+              display-mode: icons;
+
+              styles [
+                "flat",
+              ]
+            }
+
+            [end]
+            Button {
+              icon-name: "list-add-symbolic";
+              tooltip-text: _("Create Event");
+              action-name: "win.create-event";
+            }
+
+            [end]
+            Button {
+              icon-name: "x-office-calendar-symbolic";
+              tooltip-text: _("Manage Calendars");
+              action-name: "win.manage-calendars";
+            }
+          }
+        };
+      };
     }
 
-    [bottom]
-    ActionBar {
-      [end]
-      Button {
-        icon-name: "list-add-symbolic";
-        tooltip-text: _("Create Event");
-        action-name: "win.create-event";
-      }
+    StackPage {
+      name: "narrow";
 
-      [end]
-      Button {
-        icon-name: "x-office-calendar-symbolic";
-        tooltip-text: _("Manage Calendars");
-        action-name: "win.manage-calendars";
-      }
+      child: Stack narrow_stack {
+        StackPage {
+          name: "year";
+          title: _("Year");
+
+          child: Adw.ToolbarView {
+            [top]
+            Adw.HeaderBar {
+              [end]
+              MenuButton {
+                primary: true;
+                icon-name: "open-menu-symbolic";
+                tooltip-text: _("Main Menu");
+                menu-model: primary_menu;
+              }
+
+              [end]
+              Button {
+                icon-name: "system-search-symbolic";
+                tooltip-text: _("Search");
+                clicked => $search_events(template);
+
+                styles [
+                  "flat",
+                ]
+              }
+            }
+
+            content: Button {
+              label: "Year narrow";
+              clicked => $open_narrow_month_view(template);
+            };
+
+            [bottom]
+            ActionBar {
+              [start]
+              Button {
+                // action-name: "win.today";
+                child: Adw.ButtonContent {
+                  label: _("_Today");
+                  use-underline: true;
+                  icon-name: "today-symbolic";
+                  can-shrink: true;
+                  tooltip-text: _("Go to Today");
+                };
+              }
+
+              [end]
+              Button {
+                icon-name: "list-add-symbolic";
+                tooltip-text: _("Create Event");
+                action-name: "win.create-event";
+              }
+
+              [end]
+              Button {
+                icon-name: "x-office-calendar-symbolic";
+                tooltip-text: _("Manage Calendars");
+                action-name: "win.manage-calendars";
+              }
+            }
+          };
+        }
+
+        StackPage {
+          name: "month";
+          title: _("Month");
+
+          child: Adw.ToolbarView {
+            [top]
+            Adw.HeaderBar {
+              [start]
+              Button {
+                icon-name: "go-previous-symbolic";
+                tooltip-text: _("Year View");
+                clicked => $go_back_to_narrow_year_view(template);
+              }
+
+              [end]
+              MenuButton {
+                primary: true;
+                icon-name: "open-menu-symbolic";
+                tooltip-text: _("Main Menu");
+                menu-model: primary_menu;
+              }
+
+              [end]
+              Button {
+                icon-name: "system-search-symbolic";
+                tooltip-text: _("Search");
+                clicked => $search_events(template);
+
+                styles [
+                  "flat",
+                ]
+              }
+            }
+
+            content: Button {
+              label: "Month narrow";
+              clicked => $open_narrow_days_view(template);
+            };
+
+            [bottom]
+            ActionBar {
+              [start]
+              Button {
+                // action-name: "win.today";
+                child: Adw.ButtonContent {
+                  label: _("_Today");
+                  use-underline: true;
+                  icon-name: "today-symbolic";
+                  can-shrink: true;
+                  tooltip-text: _("Go to Today");
+                };
+              }
+
+              [end]
+              Button {
+                icon-name: "list-add-symbolic";
+                tooltip-text: _("Create Event");
+                action-name: "win.create-event";
+              }
+
+              [end]
+              Button {
+                icon-name: "x-office-calendar-symbolic";
+                tooltip-text: _("Manage Calendars");
+                action-name: "win.manage-calendars";
+              }
+            }
+          };
+        }
+
+        StackPage {
+          name: "days";
+          title: _("Days");
+
+          child: Adw.ToolbarView {
+            [top]
+            Adw.HeaderBar {
+              [start]
+              Button {
+                icon-name: "go-previous-symbolic";
+                tooltip-text: _("Month View");
+                clicked => $go_back_to_narrow_month_view(template);
+              }
+
+              [end]
+              MenuButton {
+                primary: true;
+                icon-name: "open-menu-symbolic";
+                tooltip-text: _("Main Menu");
+                menu-model: primary_menu;
+              }
+
+              [end]
+              Button {
+                icon-name: "system-search-symbolic";
+                tooltip-text: _("Search");
+                clicked => $search_events(template);
+
+                styles [
+                  "flat",
+                ]
+              }
+            }
+
+            content: Adw.ViewStack narrow_view_stack {
+              Adw.ViewStackPage {
+                name: "days";
+                title: _("Days");
+                icon-name: "days-symbolic";
+
+                child: Label {
+                  label: "Days";
+                };
+              }
+
+              Adw.ViewStackPage {
+                name: "day";
+                title: _("Day");
+                icon-name: "day-symbolic";
+
+                child: Label {
+                  label: "Day";
+                };
+              }
+
+              Adw.ViewStackPage {
+                name: "agenda";
+                title: _("Agenda");
+                icon-name: "view-list-symbolic";
+
+                child: Label {
+                  label: "Agenda";
+                };
+              }
+            };
+
+            [bottom]
+            ActionBar {
+              [start]
+              Button {
+                // action-name: "win.today";
+                child: Adw.ButtonContent {
+                  label: _("_Today");
+                  use-underline: true;
+                  icon-name: "today-symbolic";
+                  can-shrink: true;
+                  tooltip-text: _("Go to Today");
+                };
+              }
+
+              [center]
+              Adw.InlineViewSwitcher narrow_view_switcher {
+                stack: narrow_view_stack;
+                display-mode: icons;
+
+                styles [
+                  "flat",
+                ]
+              }
+
+              [end]
+              Button {
+                icon-name: "list-add-symbolic";
+                tooltip-text: _("Create Event");
+                action-name: "win.create-event";
+              }
+
+              [end]
+              Button {
+                icon-name: "x-office-calendar-symbolic";
+                tooltip-text: _("Manage Calendars");
+                action-name: "win.manage-calendars";
+              }
+            }
+          };
+        }
+      };
     }
   };
+
+  Adw.Breakpoint {
+    condition ("max-width: 700sp")
+
+    setters {
+      layout_stack.visible-child-name: "narrow";
+      sidebar_toggle.active: false;
+    }
+  }
+
+  Adw.Breakpoint {
+    condition ("min-width: 900sp")
+
+    setters {
+      wide_view_switcher.display-mode: both;
+    }
+  }
 }
 
 menu primary_menu {

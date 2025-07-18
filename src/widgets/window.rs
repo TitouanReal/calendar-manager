@@ -8,7 +8,10 @@ pub(crate) mod imp {
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/window.ui")]
-    pub struct CalendarManagerWindow {}
+    pub struct CalendarManagerWindow {
+        #[template_child]
+        narrow_stack: TemplateChild<gtk::Stack>,
+    }
 
     #[glib::object_subclass]
     impl ObjectSubclass for CalendarManagerWindow {
@@ -56,12 +59,7 @@ pub(crate) mod imp {
         }
     }
 
-    impl ObjectImpl for CalendarManagerWindow {
-        fn constructed(&self) {
-            self.parent_constructed();
-        }
-    }
-
+    impl ObjectImpl for CalendarManagerWindow {}
     impl WidgetImpl for CalendarManagerWindow {}
     impl WindowImpl for CalendarManagerWindow {}
     impl ApplicationWindowImpl for CalendarManagerWindow {}
@@ -85,6 +83,26 @@ pub(crate) mod imp {
         fn create_event(&self) {
             let dialog = CreateEventDialog::new();
             dialog.present(Some(&*self.obj()));
+        }
+
+        #[template_callback]
+        fn open_narrow_month_view(&self) {
+            self.narrow_stack.set_visible_child_name("month");
+        }
+
+        #[template_callback]
+        fn go_back_to_narrow_year_view(&self) {
+            self.narrow_stack.set_visible_child_name("year");
+        }
+
+        #[template_callback]
+        fn open_narrow_days_view(&self) {
+            self.narrow_stack.set_visible_child_name("days");
+        }
+
+        #[template_callback]
+        fn go_back_to_narrow_month_view(&self) {
+            self.narrow_stack.set_visible_child_name("month");
         }
     }
 }

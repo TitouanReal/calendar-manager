@@ -1,45 +1,3 @@
-blueprints = custom_target(
-  'blueprints',
-  input: files(
-    # Calendar Manager Dialog
-    'resources/ui/calendar_manager_dialog/calendar_creation_dialog.blp',
-    'resources/ui/calendar_manager_dialog/calendar_details_page.blp',
-    'resources/ui/calendar_manager_dialog/calendar_manager_dialog.blp',
-    'resources/ui/calendar_manager_dialog/calendar_row.blp',
-    'resources/ui/calendar_manager_dialog/collection_row.blp',
-    'resources/ui/calendar_manager_dialog/collections_list.blp',
-
-    # Create Event Dialog
-    'resources/ui/create_event_dialog/calendar_combo_row/calendar_combo_row.blp',
-    'resources/ui/create_event_dialog/calendar_combo_row/calendar_combo_row_header.blp',
-    'resources/ui/create_event_dialog/calendar_combo_row/calendar_combo_row_item.blp',
-    'resources/ui/create_event_dialog/calendar_combo_row/calendar_combo_row_list_item.blp',
-    'resources/ui/create_event_dialog/create_event_dialog.blp',
-    'resources/ui/search_dialog/event_row.blp',
-
-    # Search Dialog
-    'resources/ui/search_dialog/search_dialog.blp',
-
-    'resources/ui/window.blp',
-  ),
-  output: '.',
-  command: [
-    find_program('blueprint-compiler'),
-    'batch-compile',
-    '@OUTPUT@',
-    '@CURRENT_SOURCE_DIR@',
-    '@INPUT@',
-  ],
-)
-
-gnome.compile_resources(
-  meson.project_name(),
-  'resources.gresource.xml',
-  gresource_bundle: true,
-  dependencies: blueprints,
-  install: true,
-  install_dir: pkgdatadir,
-)
 
 desktop_file = i18n.merge_file(
   input: 'io.gitlab.TitouanReal.CalendarManager.desktop.in',
@@ -92,3 +50,4 @@ configure_file(
 )
 
 subdir('icons')
+subdir('resources')
