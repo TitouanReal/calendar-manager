@@ -1,0 +1,27 @@
+using Gtk 4.0;
+
+template $NarrowYearViewMonthCell: Button {
+  child: Box {
+    orientation: vertical;
+    vexpand: true;
+
+    Label {
+      label: bind $get_month_name(template.month) as <string>;
+      xalign: 0.0;
+
+      styles [
+        "narrow_year_view_month_cell_month_label",
+      ]
+    }
+
+    Grid days_grid {
+      row-homogeneous: true;
+      column-homogeneous: true;
+      vexpand: true;
+    }
+  };
+
+  styles [
+    "flat",
+  ]
+}

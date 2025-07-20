@@ -15,10 +15,14 @@ blueprints = custom_target(
     'ui/create_event_dialog/calendar_combo_row/calendar_combo_row_item.blp',
     'ui/create_event_dialog/calendar_combo_row/calendar_combo_row_list_item.blp',
     'ui/create_event_dialog/create_event_dialog.blp',
-    'ui/search_dialog/event_row.blp',
 
     # Search Dialog
+    'ui/search_dialog/event_row.blp',
     'ui/search_dialog/search_dialog.blp',
+
+    # Views
+    'ui/views/narrow/narrow_year_view/narrow_year_view.blp',
+    'ui/views/narrow/narrow_year_view/narrow_year_view_month_cell.blp',
 
     'ui/window.blp',
   ),

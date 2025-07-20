@@ -126,10 +126,6 @@ template $CalendarManagerWindow: Adw.ApplicationWindow {
             Adw.InlineViewSwitcher wide_view_switcher {
               stack: wide_view_stack;
               display-mode: icons;
-
-              styles [
-                "flat",
-              ]
             }
 
             [end]
@@ -161,6 +157,10 @@ template $CalendarManagerWindow: Adw.ApplicationWindow {
           child: Adw.ToolbarView {
             [top]
             Adw.HeaderBar {
+              title-widget: Adw.WindowTitle {
+                title: bind $get_year_label(narrow_year_view.year) as <string>;
+              };
+
               [end]
               MenuButton {
                 primary: true;
@@ -181,9 +181,8 @@ template $CalendarManagerWindow: Adw.ApplicationWindow {
               }
             }
 
-            content: Button {
-              label: "Year narrow";
-              clicked => $open_narrow_month_view(template);
+            content: $NarrowYearView narrow_year_view {
+              month_clicked => $open_narrow_month_view(template);
             };
 
             [bottom]
@@ -371,10 +370,6 @@ template $CalendarManagerWindow: Adw.ApplicationWindow {
               Adw.InlineViewSwitcher narrow_view_switcher {
                 stack: narrow_view_stack;
                 display-mode: icons;
-
-                styles [
-                  "flat",
-                ]
               }
 
               [end]

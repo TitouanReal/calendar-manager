@@ -10,3 +10,17 @@
 .events-list {
     background-color: var(--theme-base-bg);
 }
+
+.narrow-year-view-year-label {
+    font-size: 36px;
+    font-weight: bold;
+    color: var(--accent-bg-color);
+}
+
+.narrow_year_view_month_cell_month_label {
+    /* font-size: 10px; */
+}
+
+.narrow_year_view_month_cell_day_label {
+    font-size: 8px;
+}

@@ -1,6 +1,7 @@
 mod calendar_manager_dialog;
 mod create_event_dialog;
 mod search_dialog;
+mod views;
 mod window;
 
 pub use self::{

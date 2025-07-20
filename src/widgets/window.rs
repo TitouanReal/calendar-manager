@@ -1,7 +1,10 @@
 use adw::{prelude::*, subclass::prelude::*};
 use gtk::{gdk, gio, glib};
+use tracing::info;
 
-use crate::widgets::{CalendarManagerDialog, CreateEventDialog, SearchDialog};
+use crate::widgets::{
+    CalendarManagerDialog, CreateEventDialog, SearchDialog, views::NarrowYearView,
+};
 
 pub(crate) mod imp {
     use super::*;
@@ -11,6 +14,8 @@ pub(crate) mod imp {
     pub struct CalendarManagerWindow {
         #[template_child]
         narrow_stack: TemplateChild<gtk::Stack>,
+        #[template_child]
+        narrow_year_view: TemplateChild<NarrowYearView>,
     }
 
     #[glib::object_subclass]
@@ -86,7 +91,16 @@ pub(crate) mod imp {
         }
 
         #[template_callback]
-        fn open_narrow_month_view(&self) {
+        fn get_year_label(&self, year: i32) -> String {
+            year.to_string()
+        }
+
+        #[template_callback]
+        fn open_narrow_month_view(&self, year: i32, month: i32) {
+            info!(
+                "Opening narrow month view for year {} and month {}",
+                year, month
+            );
             self.narrow_stack.set_visible_child_name("month");
         }
 
