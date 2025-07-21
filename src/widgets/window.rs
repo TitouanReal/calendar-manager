@@ -1,9 +1,10 @@
 use adw::{prelude::*, subclass::prelude::*};
+use gettextrs::gettext;
 use gtk::{gdk, gio, glib};
-use tracing::info;
 
 use crate::widgets::{
-    CalendarManagerDialog, CreateEventDialog, SearchDialog, views::NarrowYearView,
+    CalendarManagerDialog, CreateEventDialog, SearchDialog,
+    views::{NarrowMonthView, NarrowYearView},
 };
 
 pub(crate) mod imp {
@@ -16,6 +17,8 @@ pub(crate) mod imp {
         narrow_stack: TemplateChild<gtk::Stack>,
         #[template_child]
         narrow_year_view: TemplateChild<NarrowYearView>,
+        #[template_child]
+        narrow_month_view: TemplateChild<NarrowMonthView>,
     }
 
     #[glib::object_subclass]
@@ -90,18 +93,36 @@ pub(crate) mod imp {
             dialog.present(Some(&*self.obj()));
         }
 
-        #[template_callback]
-        fn get_year_label(&self, year: i32) -> String {
+        #[template_callback(function)]
+        fn get_year_label(year: i32) -> String {
             year.to_string()
         }
 
         #[template_callback]
         fn open_narrow_month_view(&self, year: i32, month: i32) {
-            info!(
-                "Opening narrow month view for year {} and month {}",
-                year, month
-            );
+            self.narrow_month_view.set_year(year);
+            self.narrow_month_view.set_month(month);
             self.narrow_stack.set_visible_child_name("month");
+        }
+
+        #[template_callback(function)]
+        fn get_year_month_label(year: i32, month: i32) -> String {
+            let month_name = match month {
+                1 => gettext("January"),
+                2 => gettext("February"),
+                3 => gettext("March"),
+                4 => gettext("April"),
+                5 => gettext("May"),
+                6 => gettext("June"),
+                7 => gettext("July"),
+                8 => gettext("August"),
+                9 => gettext("September"),
+                10 => gettext("October"),
+                11 => gettext("November"),
+                12 => gettext("December"),
+                _ => "".to_string(),
+            };
+            format!("{month_name} {year} ")
         }
 
         #[template_callback]

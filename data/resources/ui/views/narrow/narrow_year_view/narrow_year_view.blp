@@ -10,8 +10,9 @@ template $NarrowYearView: Widget {
 
       Box {
         Label year_label {
-          label: bind $get_year_label(template.year) as <string>;
+          label: bind $get_year_label_narrow(template.year) as <string>;
           xalign: 0.0;
+          hexpand: true;
 
           styles [
             "narrow-year-view-year-label",
@@ -20,12 +21,20 @@ template $NarrowYearView: Widget {
 
         Button {
           icon-name: "go-down-symbolic";
-          clicked => $go_to_previous_year(template);
+          clicked => $go_to_next_year(template);
+
+          styles [
+            "flat",
+          ]
         }
 
         Button {
           icon-name: "go-up-symbolic";
-          clicked => $go_to_next_year(template);
+          clicked => $go_to_previous_year(template);
+
+          styles [
+            "flat",
+          ]
         }
       }
 

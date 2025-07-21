@@ -83,7 +83,7 @@ pub(crate) mod imp {
         }
 
         #[template_callback]
-        fn get_year_label(&self) -> String {
+        fn get_year_label_narrow(&self) -> String {
             self.obj().year().to_string()
         }
 

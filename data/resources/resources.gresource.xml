@@ -23,6 +23,7 @@
     <file compressed="true" preprocess="xml-stripblanks" alias="event_row.ui">ui/search_dialog/event_row.ui</file>
 
     <!-- Views -->
+    <file compressed="true" preprocess="xml-stripblanks" alias="narrow_month_view.ui">ui/views/narrow/narrow_month_view/narrow_month_view.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="narrow_year_view.ui">ui/views/narrow/narrow_year_view/narrow_year_view.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="narrow_year_view_month_cell.ui">ui/views/narrow/narrow_year_view/narrow_year_view_month_cell.ui</file>
 

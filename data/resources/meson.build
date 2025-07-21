@@ -21,6 +21,7 @@ blueprints = custom_target(
     'ui/search_dialog/search_dialog.blp',
 
     # Views
+    'ui/views/narrow/narrow_month_view/narrow_month_view.blp',
     'ui/views/narrow/narrow_year_view/narrow_year_view.blp',
     'ui/views/narrow/narrow_year_view/narrow_year_view_month_cell.blp',
 

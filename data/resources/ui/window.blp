@@ -230,6 +230,10 @@ template $CalendarManagerWindow: Adw.ApplicationWindow {
                 clicked => $go_back_to_narrow_year_view(template);
               }
 
+              title-widget: Adw.WindowTitle {
+                title: bind $get_year_month_label(narrow_month_view.year, narrow_month_view.month) as <string>;
+              };
+
               [end]
               MenuButton {
                 primary: true;
@@ -250,9 +254,8 @@ template $CalendarManagerWindow: Adw.ApplicationWindow {
               }
             }
 
-            content: Button {
-              label: "Month narrow";
-              clicked => $open_narrow_days_view(template);
+            content: $NarrowMonthView narrow_month_view {
+              day_clicked => $open_narrow_days_view(template);
             };
 
             [bottom]

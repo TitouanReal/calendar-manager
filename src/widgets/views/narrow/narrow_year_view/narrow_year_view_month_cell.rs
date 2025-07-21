@@ -2,6 +2,7 @@ use std::cell::Cell;
 
 use adw::{prelude::*, subclass::prelude::*};
 use ccm::jiff;
+use gettextrs::gettext;
 use gtk::glib;
 
 pub(crate) mod imp {
@@ -87,22 +88,22 @@ pub(crate) mod imp {
         }
 
         #[template_callback]
-        fn get_month_name(&self) -> &str {
+        fn get_month_name(&self) -> String {
             let month = self.obj().month();
             match month {
-                1 => "January",
-                2 => "February",
-                3 => "March",
-                4 => "April",
-                5 => "May",
-                6 => "June",
-                7 => "July",
-                8 => "August",
-                9 => "September",
-                10 => "October",
-                11 => "November",
-                12 => "December",
-                _ => "",
+                1 => gettext("January"),
+                2 => gettext("February"),
+                3 => gettext("March"),
+                4 => gettext("April"),
+                5 => gettext("May"),
+                6 => gettext("June"),
+                7 => gettext("July"),
+                8 => gettext("August"),
+                9 => gettext("September"),
+                10 => gettext("October"),
+                11 => gettext("November"),
+                12 => gettext("December"),
+                _ => "".to_string(),
             }
         }
     }
