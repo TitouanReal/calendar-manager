@@ -114,3 +114,12 @@ glib::wrapper! {
         @extends gtk::Widget, gtk::Button,
         @implements gtk::Accessible, gtk::Actionable, gtk::Buildable, gtk::ConstraintTarget;
 }
+
+impl NarrowYearViewMonthCell {
+    pub fn new(year: i32, month: i32) -> Self {
+        glib::Object::builder()
+            .property("year", year)
+            .property("month", month)
+            .build()
+    }
+}

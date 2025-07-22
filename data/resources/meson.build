@@ -24,6 +24,7 @@ blueprints = custom_target(
     'ui/views/narrow/narrow_month_view/narrow_month_view.blp',
     'ui/views/narrow/narrow_year_view/narrow_year_view.blp',
     'ui/views/narrow/narrow_year_view/narrow_year_view_month_cell.blp',
+    'ui/views/narrow/narrow_year_view/narrow_year_view_year_row.blp',
 
     'ui/window.blp',
   ),

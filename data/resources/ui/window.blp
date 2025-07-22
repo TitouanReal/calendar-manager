@@ -5,6 +5,8 @@ template $CalendarManagerWindow: Adw.ApplicationWindow {
   title: _("Calendar Manager");
   default-width: 800;
   default-height: 600;
+  width-request: 360;
+  height-request: 294;
 
   content: Stack layout_stack {
     StackPage {
@@ -58,9 +60,7 @@ template $CalendarManagerWindow: Adw.ApplicationWindow {
               use-underline: true;
               icon-name: "year-symbolic";
 
-              child: Label {
-                label: "Year";
-              };
+              child: $NarrowYearView {};
             }
 
             Adw.ViewStackPage {
