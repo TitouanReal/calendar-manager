@@ -3,23 +3,23 @@ use std::{cell::Cell, sync::LazyLock};
 use adw::{prelude::*, subclass::prelude::*};
 use gtk::glib::{self, closure_local, subclass::Signal};
 
-use super::NarrowYearViewMonthCell;
+use super::YearViewMonthCell;
 
 pub(crate) mod imp {
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate, glib::Properties)]
-    #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/narrow_year_view_year_row.ui")]
-    #[properties(wrapper_type = super::NarrowYearViewYearRow)]
-    pub struct NarrowYearViewYearRow {
+    #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/year_view_year_row.ui")]
+    #[properties(wrapper_type = super::YearViewYearRow)]
+    pub struct YearViewYearRow {
         #[property(get, set)]
         year: Cell<i32>,
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for NarrowYearViewYearRow {
-        const NAME: &'static str = "NarrowYearViewYearRow";
-        type Type = super::NarrowYearViewYearRow;
+    impl ObjectSubclass for YearViewYearRow {
+        const NAME: &'static str = "YearViewYearRow";
+        type Type = super::YearViewYearRow;
         type ParentType = gtk::Box;
 
         fn class_init(klass: &mut Self::Class) {
@@ -33,12 +33,7 @@ pub(crate) mod imp {
     }
 
     #[glib::derived_properties]
-    impl ObjectImpl for NarrowYearViewYearRow {
-        fn constructed(&self) {
-            self.parent_constructed();
-            self.obj().set_year(2025);
-        }
-
+    impl ObjectImpl for YearViewYearRow {
         fn signals() -> &'static [Signal] {
             static SIGNALS: LazyLock<Vec<Signal>> = LazyLock::new(|| {
                 vec![
@@ -53,18 +48,18 @@ pub(crate) mod imp {
         }
     }
 
-    impl WidgetImpl for NarrowYearViewYearRow {}
-    impl BoxImpl for NarrowYearViewYearRow {}
+    impl WidgetImpl for YearViewYearRow {}
+    impl BoxImpl for YearViewYearRow {}
 
     #[gtk::template_callbacks]
-    impl NarrowYearViewYearRow {
+    impl YearViewYearRow {
         #[template_callback]
         fn get_year_label_narrow(&self) -> String {
             self.obj().year().to_string()
         }
 
         #[template_callback]
-        fn month_cell_clicked(&self, cell: NarrowYearViewMonthCell) {
+        fn month_cell_clicked(&self, cell: YearViewMonthCell) {
             self.obj()
                 .emit_by_name::<()>("month-clicked", &[&cell.year(), &cell.month()]);
         }
@@ -72,12 +67,12 @@ pub(crate) mod imp {
 }
 
 glib::wrapper! {
-    pub struct NarrowYearViewYearRow(ObjectSubclass<imp::NarrowYearViewYearRow>)
+    pub struct YearViewYearRow(ObjectSubclass<imp::YearViewYearRow>)
         @extends gtk::Widget, gtk::Box,
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
 }
 
-impl NarrowYearViewYearRow {
+impl YearViewYearRow {
     pub fn new(year: i32) -> Self {
         glib::Object::builder().property("year", year).build()
     }

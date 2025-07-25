@@ -9,9 +9,9 @@ pub(crate) mod imp {
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate, glib::Properties)]
-    #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/narrow_year_view_month_cell.ui")]
-    #[properties(wrapper_type = super::NarrowYearViewMonthCell)]
-    pub struct NarrowYearViewMonthCell {
+    #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/year_view_month_cell.ui")]
+    #[properties(wrapper_type = super::YearViewMonthCell)]
+    pub struct YearViewMonthCell {
         #[property(get, set = Self::set_year)]
         year: Cell<i32>,
         #[property(get, set = Self::set_month)]
@@ -21,9 +21,9 @@ pub(crate) mod imp {
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for NarrowYearViewMonthCell {
-        const NAME: &'static str = "NarrowYearViewMonthCell";
-        type Type = super::NarrowYearViewMonthCell;
+    impl ObjectSubclass for YearViewMonthCell {
+        const NAME: &'static str = "YearViewMonthCell";
+        type Type = super::YearViewMonthCell;
         type ParentType = gtk::Button;
 
         fn class_init(klass: &mut Self::Class) {
@@ -37,12 +37,12 @@ pub(crate) mod imp {
     }
 
     #[glib::derived_properties]
-    impl ObjectImpl for NarrowYearViewMonthCell {}
-    impl WidgetImpl for NarrowYearViewMonthCell {}
-    impl ButtonImpl for NarrowYearViewMonthCell {}
+    impl ObjectImpl for YearViewMonthCell {}
+    impl WidgetImpl for YearViewMonthCell {}
+    impl ButtonImpl for YearViewMonthCell {}
 
     #[gtk::template_callbacks]
-    impl NarrowYearViewMonthCell {
+    impl YearViewMonthCell {
         fn set_year(&self, year: i32) {
             self.year.set(year);
             self.set_days_grid();
@@ -70,19 +70,19 @@ pub(crate) mod imp {
 
             for cell in cells.by_ref().take(weekday_of_first_day) {
                 let label = gtk::Label::new(None);
-                label.add_css_class("narrow_year_view_month_cell_month_label");
+                label.add_css_class("year-view-month-cell-month-label");
                 self.days_grid.attach(&label, cell % 7, cell / 7, 1, 1);
             }
 
             for (day_number, cell) in cells.by_ref().take(days_in_month).enumerate() {
                 let label = gtk::Label::new(Some(&format!("{}", day_number + 1)));
-                label.add_css_class("narrow_year_view_month_cell_day_label");
+                label.add_css_class("year-view-month-cell-day-label");
                 self.days_grid.attach(&label, cell % 7, cell / 7, 1, 1);
             }
 
             for cell in cells {
                 let label = gtk::Label::new(None);
-                label.add_css_class("narrow_year_view_month_cell_day_label");
+                label.add_css_class("year-view-month-cell-day-label");
                 self.days_grid.attach(&label, cell % 7, cell / 7, 1, 1);
             }
         }
@@ -110,12 +110,12 @@ pub(crate) mod imp {
 }
 
 glib::wrapper! {
-    pub struct NarrowYearViewMonthCell(ObjectSubclass<imp::NarrowYearViewMonthCell>)
+    pub struct YearViewMonthCell(ObjectSubclass<imp::YearViewMonthCell>)
         @extends gtk::Widget, gtk::Button,
         @implements gtk::Accessible, gtk::Actionable, gtk::Buildable, gtk::ConstraintTarget;
 }
 
-impl NarrowYearViewMonthCell {
+impl YearViewMonthCell {
     pub fn new(year: i32, month: i32) -> Self {
         glib::Object::builder()
             .property("year", year)

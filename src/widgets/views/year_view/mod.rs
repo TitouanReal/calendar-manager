@@ -9,37 +9,34 @@ use gtk::{
     glib::{self, clone, subclass::Signal},
 };
 
-mod narrow_year_view_month_cell;
-mod narrow_year_view_year_row;
+mod year_view_month_cell;
+mod year_view_year_row;
 
-use self::{
-    narrow_year_view_month_cell::NarrowYearViewMonthCell,
-    narrow_year_view_year_row::NarrowYearViewYearRow,
-};
+use self::{year_view_month_cell::YearViewMonthCell, year_view_year_row::YearViewYearRow};
 
 pub(crate) mod imp {
     use super::*;
 
     #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
-    #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/narrow_year_view.ui")]
-    #[properties(wrapper_type = super::NarrowYearView)]
-    pub struct NarrowYearView {
+    #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/year_view.ui")]
+    #[properties(wrapper_type = super::YearView)]
+    pub struct YearView {
         #[property(get, set)]
         year: Cell<i32>,
         // TODO: I should remove the OnceCell?
-        year_rows: OnceCell<Mutex<Vec<NarrowYearViewYearRow>>>,
+        year_rows: OnceCell<Mutex<Vec<YearViewYearRow>>>,
         scroll_offset: Cell<f64>,
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for NarrowYearView {
-        const NAME: &'static str = "NarrowYearView";
-        type Type = super::NarrowYearView;
+    impl ObjectSubclass for YearView {
+        const NAME: &'static str = "YearView";
+        type Type = super::YearView;
         type ParentType = gtk::Widget;
 
         fn class_init(klass: &mut Self::Class) {
-            NarrowYearViewMonthCell::ensure_type();
-            NarrowYearViewYearRow::ensure_type();
+            YearViewMonthCell::ensure_type();
+            YearViewYearRow::ensure_type();
 
             klass.bind_template();
             klass.bind_template_callbacks();
@@ -51,14 +48,14 @@ pub(crate) mod imp {
     }
 
     #[glib::derived_properties]
-    impl ObjectImpl for NarrowYearView {
+    impl ObjectImpl for YearView {
         fn constructed(&self) {
             self.parent_constructed();
 
             let current_year = 2025;
             self.obj().set_year(current_year);
 
-            let first_row = NarrowYearViewYearRow::new(current_year - 1);
+            let first_row = YearViewYearRow::new(current_year - 1);
             first_row.connect_month_clicked(clone!(
                 #[weak(rename_to = imp)]
                 self,
@@ -76,7 +73,7 @@ pub(crate) mod imp {
 
             let mut year_rows = vec![first_row];
             for year in current_year..current_year + nb_rows + 1 {
-                let row = NarrowYearViewYearRow::new(year);
+                let row = YearViewYearRow::new(year);
                 row.insert_before(&*self.obj(), None::<&gtk::Widget>);
                 row.connect_month_clicked(clone!(
                     #[weak(rename_to = imp)]
@@ -105,7 +102,7 @@ pub(crate) mod imp {
         }
     }
 
-    impl WidgetImpl for NarrowYearView {
+    impl WidgetImpl for YearView {
         fn size_allocate(&self, width: i32, height: i32, baseline: i32) {
             let year_rows = self.year_rows.get().unwrap().lock().unwrap();
             let last_row = year_rows
@@ -123,7 +120,7 @@ pub(crate) mod imp {
                     #[weak(rename_to = imp)]
                     self,
                     move || {
-                        let row = NarrowYearViewYearRow::new(year);
+                        let row = YearViewYearRow::new(year);
                         row.insert_before(&*imp.obj(), None::<&gtk::Widget>);
                         row.connect_month_clicked(clone!(
                             #[weak]
@@ -151,7 +148,7 @@ pub(crate) mod imp {
     }
 
     #[gtk::template_callbacks]
-    impl NarrowYearView {
+    impl YearView {
         #[template_callback]
         fn get_year_label_narrow(&self) -> String {
             self.obj().year().to_string()
@@ -221,6 +218,6 @@ pub(crate) mod imp {
 }
 
 glib::wrapper! {
-    pub struct NarrowYearView(ObjectSubclass<imp::NarrowYearView>)
+    pub struct YearView(ObjectSubclass<imp::YearView>)
         @extends gtk::Widget;
 }

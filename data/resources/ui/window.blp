@@ -60,7 +60,7 @@ template $CalendarManagerWindow: Adw.ApplicationWindow {
               use-underline: true;
               icon-name: "year-symbolic";
 
-              child: $NarrowYearView {};
+              child: $YearView {};
             }
 
             Adw.ViewStackPage {
@@ -181,7 +181,7 @@ template $CalendarManagerWindow: Adw.ApplicationWindow {
               }
             }
 
-            content: $NarrowYearView narrow_year_view {
+            content: $YearView narrow_year_view {
               month_clicked => $open_narrow_month_view(template);
             };
 

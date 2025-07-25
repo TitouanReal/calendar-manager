@@ -4,7 +4,7 @@ use gtk::{gdk, gio, glib};
 
 use crate::widgets::{
     CalendarManagerDialog, CreateEventDialog, SearchDialog,
-    views::{NarrowMonthView, NarrowYearView},
+    views::{NarrowMonthView, YearView},
 };
 
 pub(crate) mod imp {
@@ -16,7 +16,7 @@ pub(crate) mod imp {
         #[template_child]
         narrow_stack: TemplateChild<gtk::Stack>,
         #[template_child]
-        narrow_year_view: TemplateChild<NarrowYearView>,
+        narrow_year_view: TemplateChild<YearView>,
         #[template_child]
         narrow_month_view: TemplateChild<NarrowMonthView>,
     }
