@@ -1,10 +1,11 @@
 use adw::{prelude::*, subclass::prelude::*};
+use ccm::jiff;
 use gettextrs::gettext;
 use gtk::{gdk, gio, glib};
 
 use crate::widgets::{
     CalendarManagerDialog, CreateEventDialog, SearchDialog,
-    views::{NarrowMonthView, YearView},
+    views::{MonthView, YearView},
 };
 
 pub(crate) mod imp {
@@ -14,11 +15,13 @@ pub(crate) mod imp {
     #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/window.ui")]
     pub struct CalendarManagerWindow {
         #[template_child]
+        main_view: TemplateChild<adw::MultiLayoutView>,
+        #[template_child]
+        wide_view_stack: TemplateChild<adw::ViewStack>,
+        #[template_child]
         narrow_stack: TemplateChild<gtk::Stack>,
         #[template_child]
-        narrow_year_view: TemplateChild<YearView>,
-        #[template_child]
-        narrow_month_view: TemplateChild<NarrowMonthView>,
+        month_view: TemplateChild<MonthView>,
     }
 
     #[glib::object_subclass]
@@ -28,6 +31,8 @@ pub(crate) mod imp {
         type ParentType = adw::ApplicationWindow;
 
         fn class_init(klass: &mut Self::Class) {
+            YearView::ensure_type();
+
             klass.bind_template();
             klass.bind_template_callbacks();
 
@@ -99,9 +104,13 @@ pub(crate) mod imp {
         }
 
         #[template_callback]
-        fn open_narrow_month_view(&self, year: i32, month: i32) {
-            self.narrow_month_view.set_year(year);
-            self.narrow_month_view.set_month(month);
+        fn open_month_view(&self, year: i32, month: i32) {
+            let date =
+                jiff::civil::Date::new(year as i16, month as i8, 1).expect("Date should be valid");
+            let week = date.iso_week_date().week();
+            self.month_view.set_year(year);
+            self.month_view.set_week(week);
+            self.wide_view_stack.set_visible_child_name("month");
             self.narrow_stack.set_visible_child_name("month");
         }
 
@@ -126,18 +135,37 @@ pub(crate) mod imp {
         }
 
         #[template_callback]
-        fn go_back_to_narrow_year_view(&self) {
+        fn go_back_to_year_view(&self) {
+            self.wide_view_stack.set_visible_child_name("year");
             self.narrow_stack.set_visible_child_name("year");
         }
 
         #[template_callback]
-        fn open_narrow_days_view(&self) {
-            self.narrow_stack.set_visible_child_name("days");
+        fn open_days_view(&self) {
+            match self
+                .main_view
+                .layout_name()
+                .expect("A layout should be selected")
+                .as_str()
+            {
+                "wide" => (),
+                "narrow" => self.narrow_stack.set_visible_child_name("days"),
+                _ => (),
+            }
         }
 
         #[template_callback]
-        fn go_back_to_narrow_month_view(&self) {
-            self.narrow_stack.set_visible_child_name("month");
+        fn go_back_to_month_view(&self) {
+            match self
+                .main_view
+                .layout_name()
+                .expect("A layout should be selected")
+                .as_str()
+            {
+                "wide" => (),
+                "narrow" => self.narrow_stack.set_visible_child_name("month"),
+                _ => (),
+            }
         }
     }
 }

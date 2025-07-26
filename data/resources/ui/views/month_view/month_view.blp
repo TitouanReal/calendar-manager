@@ -1,0 +1,12 @@
+using Gtk 4.0;
+
+template $MonthView: Widget {
+  overflow: hidden;
+  hexpand: true;
+  vexpand: true;
+
+  EventControllerScroll {
+    flags: vertical | kinetic;
+    scroll => $scroll(template);
+  }
+}

@@ -1,8 +1,0 @@
-using Gtk 4.0;
-
-template $NarrowMonthView: Widget {
-  Button button {
-    label: bind $get_month_label(template.year, template.month) as <string>;
-    clicked => $day_cell_clicked(template);
-  }
-}
