@@ -4,6 +4,7 @@ use std::{
 };
 
 use adw::{prelude::*, subclass::prelude::*};
+use ccm::jiff;
 use gtk::{
     Allocation,
     glib::{self, clone, subclass::Signal},
@@ -12,7 +13,7 @@ use gtk::{
 mod year_view_month_cell;
 mod year_view_year_row;
 
-use self::{year_view_month_cell::YearViewMonthCell, year_view_year_row::YearViewYearRow};
+use self::{year_view_month_cell::*, year_view_year_row::*};
 
 pub(crate) mod imp {
     use super::*;
@@ -23,6 +24,8 @@ pub(crate) mod imp {
     pub struct YearView {
         #[property(get, set)]
         year: Cell<i32>,
+        #[property(get, set, builder(GridLayout::default()))]
+        grid_layout: Cell<GridLayout>,
         // TODO: I should remove the OnceCell?
         year_rows: OnceCell<Mutex<Vec<YearViewYearRow>>>,
         scroll_offset: Cell<f64>,
@@ -52,10 +55,14 @@ pub(crate) mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            let current_year = 2025;
-            self.obj().set_year(current_year);
+            let obj = self.obj();
 
-            let first_row = YearViewYearRow::new(current_year - 1);
+            let current_year = jiff::Zoned::now().year() as i32;
+            obj.set_year(current_year);
+
+            let first_row = YearViewYearRow::new(current_year - 1, GridLayout::Rows4Columns3);
+            obj.bind_property("grid-layout", &first_row, "grid-layout")
+                .build();
             first_row.connect_month_clicked(clone!(
                 #[weak(rename_to = imp)]
                 self,
@@ -66,14 +73,16 @@ pub(crate) mod imp {
             ));
             first_row.insert_before(&*self.obj(), None::<&gtk::Widget>);
 
-            let (row_height, ..) = first_row.measure(gtk::Orientation::Vertical, 800);
+            let (row_height, ..) = first_row.measure(gtk::Orientation::Vertical, 400);
             let offset = row_height as f64;
             self.scroll_offset.set(offset);
             let nb_rows = self.obj().height() / row_height + 1;
 
             let mut year_rows = vec![first_row];
             for year in current_year..current_year + nb_rows + 1 {
-                let row = YearViewYearRow::new(year);
+                let row = YearViewYearRow::new(year, GridLayout::Rows4Columns3);
+                obj.bind_property("grid-layout", &row, "grid-layout")
+                    .build();
                 row.insert_before(&*self.obj(), None::<&gtk::Widget>);
                 row.connect_month_clicked(clone!(
                     #[weak(rename_to = imp)]
@@ -120,7 +129,7 @@ pub(crate) mod imp {
                     #[weak(rename_to = imp)]
                     self,
                     move || {
-                        let row = YearViewYearRow::new(year);
+                        let row = YearViewYearRow::new(year, GridLayout::Rows4Columns3);
                         row.insert_before(&*imp.obj(), None::<&gtk::Widget>);
                         row.connect_month_clicked(clone!(
                             #[weak]

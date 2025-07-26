@@ -3,7 +3,7 @@ use std::cell::Cell;
 use adw::{prelude::*, subclass::prelude::*};
 use ccm::jiff;
 use gettextrs::gettext;
-use gtk::glib;
+use gtk::glib::{self, clone};
 
 pub(crate) mod imp {
     use super::*;
@@ -12,9 +12,9 @@ pub(crate) mod imp {
     #[template(resource = "/io/gitlab/TitouanReal/CalendarManager/year_view_month_cell.ui")]
     #[properties(wrapper_type = super::YearViewMonthCell)]
     pub struct YearViewMonthCell {
-        #[property(get, set = Self::set_year)]
+        #[property(get, set)]
         year: Cell<i32>,
-        #[property(get, set = Self::set_month)]
+        #[property(get, set)]
         month: Cell<i32>,
         #[template_child]
         days_grid: TemplateChild<gtk::Grid>,
@@ -37,22 +37,34 @@ pub(crate) mod imp {
     }
 
     #[glib::derived_properties]
-    impl ObjectImpl for YearViewMonthCell {}
+    impl ObjectImpl for YearViewMonthCell {
+        fn constructed(&self) {
+            self.parent_constructed();
+
+            let obj = self.obj();
+
+            obj.connect_year_notify(clone!(
+                #[weak(rename_to = imp)]
+                self,
+                move |_| {
+                    imp.set_days_grid();
+                }
+            ));
+            obj.connect_month_notify(clone!(
+                #[weak(rename_to = imp)]
+                self,
+                move |_| {
+                    imp.set_days_grid();
+                }
+            ));
+        }
+    }
+
     impl WidgetImpl for YearViewMonthCell {}
     impl ButtonImpl for YearViewMonthCell {}
 
     #[gtk::template_callbacks]
     impl YearViewMonthCell {
-        fn set_year(&self, year: i32) {
-            self.year.set(year);
-            self.set_days_grid();
-        }
-
-        fn set_month(&self, month: i32) {
-            self.month.set(month);
-            self.set_days_grid();
-        }
-
         fn set_days_grid(&self) {
             let year = self.year.get();
             let month = self.month.get();

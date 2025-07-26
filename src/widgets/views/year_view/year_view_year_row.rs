@@ -1,9 +1,26 @@
-use std::{cell::Cell, sync::LazyLock};
+use std::{
+    cell::{Cell, OnceCell},
+    sync::LazyLock,
+};
 
 use adw::{prelude::*, subclass::prelude::*};
-use gtk::glib::{self, closure_local, subclass::Signal};
+use gtk::glib::{self, clone, closure_local, subclass::Signal};
 
 use super::YearViewMonthCell;
+
+#[derive(Debug, Default, Hash, Eq, PartialEq, Clone, Copy, glib::Enum)]
+#[enum_type(name = "GridLayout")]
+pub enum GridLayout {
+    #[enum_value(name = "Rows 6 Columns 2", nick = "rows6columns2")]
+    Rows6Columns2,
+    #[default]
+    #[enum_value(name = "Rows 4 Columns 3", nick = "rows4columns3")]
+    Rows4Columns3,
+    #[enum_value(name = "Rows 3 Columns 4", nick = "rows3columns4")]
+    Rows3Columns4,
+    #[enum_value(name = "Rows 2 Columns 6", nick = "rows2columns6")]
+    Rows2Columns6,
+}
 
 pub(crate) mod imp {
     use super::*;
@@ -14,6 +31,11 @@ pub(crate) mod imp {
     pub struct YearViewYearRow {
         #[property(get, set)]
         year: Cell<i32>,
+        #[property(get, set, builder(GridLayout::default()))]
+        grid_layout: Cell<GridLayout>,
+        #[template_child]
+        month_grid: TemplateChild<gtk::Grid>,
+        month_cells: OnceCell<[YearViewMonthCell; 12]>,
     }
 
     #[glib::object_subclass]
@@ -34,6 +56,41 @@ pub(crate) mod imp {
 
     #[glib::derived_properties]
     impl ObjectImpl for YearViewYearRow {
+        fn constructed(&self) {
+            self.parent_constructed();
+
+            let obj = self.obj();
+
+            let year = self.year.get();
+
+            let mut cells = Vec::new();
+            for month in 1..=12 {
+                let cell = YearViewMonthCell::new(year, month);
+                obj.bind_property("year", &cell, "year").build();
+                cell.connect_clicked(clone!(
+                    #[weak(rename_to = imp)]
+                    self,
+                    move |cell| {
+                        imp.obj()
+                            .emit_by_name::<()>("month-clicked", &[&cell.year(), &cell.month()]);
+                    }
+                ));
+                cells.push(cell);
+            }
+
+            self.month_cells
+                .set(cells.try_into().expect("There should be 12 month cells"))
+                .expect("Month cells should not already be initialized");
+
+            obj.connect_grid_layout_notify(clone!(
+                #[weak(rename_to = imp)]
+                self,
+                move |_| {
+                    imp.update_grid();
+                }
+            ));
+        }
+
         fn signals() -> &'static [Signal] {
             static SIGNALS: LazyLock<Vec<Signal>> = LazyLock::new(|| {
                 vec![
@@ -53,6 +110,75 @@ pub(crate) mod imp {
 
     #[gtk::template_callbacks]
     impl YearViewYearRow {
+        fn update_grid(&self) {
+            for i in 0..6 {
+                for j in 0..6 {
+                    if let Some(widget) = self.month_grid.child_at(i, j) {
+                        self.month_grid.remove(&widget);
+                    }
+                }
+            }
+
+            match self.grid_layout.get() {
+                GridLayout::Rows2Columns6 => {
+                    for i in 0..12 {
+                        let month_cell = self
+                            .month_cells
+                            .get()
+                            .expect("Month cells should be initialized")
+                            .get(i)
+                            .expect("There should be 12 month cells");
+                        let row = i / 6;
+                        let column = i % 6;
+                        self.month_grid
+                            .attach(month_cell, column as i32, row as i32, 1, 1);
+                    }
+                }
+                GridLayout::Rows3Columns4 => {
+                    for i in 0..12 {
+                        let month_cell = self
+                            .month_cells
+                            .get()
+                            .expect("Month cells should be initialized")
+                            .get(i)
+                            .expect("There should be 12 month cells");
+                        let row = i / 4;
+                        let column = i % 4;
+                        self.month_grid
+                            .attach(month_cell, column as i32, row as i32, 1, 1);
+                    }
+                }
+                GridLayout::Rows4Columns3 => {
+                    for i in 0..12 {
+                        let month_cell = self
+                            .month_cells
+                            .get()
+                            .expect("Month cells should be initialized")
+                            .get(i)
+                            .expect("There should be 12 month cells");
+                        let row = i / 3;
+                        let column = i % 3;
+                        self.month_grid
+                            .attach(month_cell, column as i32, row as i32, 1, 1);
+                    }
+                }
+                GridLayout::Rows6Columns2 => {
+                    for i in 0..12 {
+                        let month_cell = self
+                            .month_cells
+                            .get()
+                            .expect("Month cells should be initialized")
+                            .get(i)
+                            .expect("There should be 12 month cells");
+                        let row = i / 2;
+                        let column = i % 2;
+                        self.month_grid
+                            .attach(month_cell, column as i32, row as i32, 1, 1);
+                    }
+                }
+            }
+        }
+
         #[template_callback]
         fn get_year_label_narrow(&self) -> String {
             self.obj().year().to_string()
@@ -73,8 +199,11 @@ glib::wrapper! {
 }
 
 impl YearViewYearRow {
-    pub fn new(year: i32) -> Self {
-        glib::Object::builder().property("year", year).build()
+    pub fn new(year: i32, grid_layout: GridLayout) -> Self {
+        glib::Object::builder()
+            .property("year", year)
+            .property("grid-layout", grid_layout)
+            .build()
     }
 
     pub fn connect_month_clicked<F: Fn(&Self, i32, i32) + 'static>(
