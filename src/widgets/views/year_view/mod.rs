@@ -4,7 +4,6 @@ use std::{
 };
 
 use adw::{prelude::*, subclass::prelude::*};
-use ccm::jiff;
 use gtk::{
     Allocation,
     glib::{self, clone, subclass::Signal},
@@ -13,7 +12,23 @@ use gtk::{
 mod year_view_month_cell;
 mod year_view_year_row;
 
+use crate::CalendarManagerApplication;
+
 use self::{year_view_month_cell::*, year_view_year_row::*};
+
+const SPACING: i32 = 12;
+
+#[derive(Debug, Default, Hash, Eq, PartialEq, Clone, Copy, glib::Enum)]
+#[enum_type(name = "YearViewStyling")]
+pub enum YearViewStyling {
+    #[enum_value(name = "Narrow", nick = "narrow")]
+    Narrow,
+    #[default]
+    #[enum_value(name = "Medium", nick = "medium")]
+    Medium,
+    #[enum_value(name = "Wide", nick = "wide")]
+    Wide,
+}
 
 pub(crate) mod imp {
     use super::*;
@@ -24,9 +39,9 @@ pub(crate) mod imp {
     pub struct YearView {
         #[property(get, set)]
         year: Cell<i32>,
-        #[property(get, set, builder(GridLayout::default()))]
-        grid_layout: Cell<GridLayout>,
-        // TODO: I should remove the OnceCell?
+        #[property(get, set, builder(YearViewStyling::default()))]
+        styling: Cell<YearViewStyling>,
+        // TODO: I should remove the OnceCell? Should I use Cell instead of Mutex?
         year_rows: OnceCell<Mutex<Vec<YearViewYearRow>>>,
         scroll_offset: Cell<f64>,
     }
@@ -57,11 +72,13 @@ pub(crate) mod imp {
 
             let obj = self.obj();
 
-            let current_year = jiff::Zoned::now().year() as i32;
+            let application = CalendarManagerApplication::default();
+            let current_year = application.current_year();
             obj.set_year(current_year);
 
-            let first_row = YearViewYearRow::new(current_year - 1, GridLayout::Rows4Columns3);
-            obj.bind_property("grid-layout", &first_row, "grid-layout")
+            let first_row = YearViewYearRow::new(current_year - 1);
+            obj.bind_property("styling", &first_row, "styling")
+                .sync_create()
                 .build();
             first_row.connect_month_clicked(clone!(
                 #[weak(rename_to = imp)]
@@ -80,8 +97,9 @@ pub(crate) mod imp {
 
             let mut year_rows = vec![first_row];
             for year in current_year..current_year + nb_rows + 1 {
-                let row = YearViewYearRow::new(year, GridLayout::Rows4Columns3);
-                obj.bind_property("grid-layout", &row, "grid-layout")
+                let row = YearViewYearRow::new(year);
+                obj.bind_property("styling", &row, "styling")
+                    .sync_create()
                     .build();
                 row.insert_before(&*self.obj(), None::<&gtk::Widget>);
                 row.connect_month_clicked(clone!(
@@ -118,10 +136,10 @@ pub(crate) mod imp {
                 .last()
                 .expect("There should be at least one year row")
                 .to_owned();
-            let (row_height, ..) = last_row.measure(gtk::Orientation::Vertical, width);
+            let (minimum_row_height, ..) = last_row.measure(gtk::Orientation::Vertical, width);
 
             // If there is not enough rows anymore, add some
-            let desired_nb_rows = height / row_height + 3;
+            let desired_nb_rows = height / minimum_row_height + 3;
             let nb_of_new_rows = desired_nb_rows - year_rows.len() as i32;
             let last_year = last_row.year();
             for year in last_year + 1..last_year + nb_of_new_rows + 1 {
@@ -129,7 +147,11 @@ pub(crate) mod imp {
                     #[weak(rename_to = imp)]
                     self,
                     move || {
-                        let row = YearViewYearRow::new(year, GridLayout::Rows4Columns3);
+                        let row = YearViewYearRow::new(year);
+                        imp.obj()
+                            .bind_property("styling", &row, "styling")
+                            .sync_create()
+                            .build();
                         row.insert_before(&*imp.obj(), None::<&gtk::Widget>);
                         row.connect_month_clicked(clone!(
                             #[weak]
@@ -147,9 +169,9 @@ pub(crate) mod imp {
             for (i, row) in year_rows.iter().enumerate() {
                 let allocation = Allocation::new(
                     0,
-                    -self.scroll_offset.get() as i32 + i as i32 * row_height,
+                    -self.scroll_offset.get() as i32 + (i as i32 * (minimum_row_height + SPACING)),
                     width,
-                    row_height,
+                    minimum_row_height,
                 );
                 row.size_allocate(&allocation, baseline);
             }
