@@ -11,9 +11,20 @@
     background-color: var(--theme-base-bg);
 }
 
+.year-view-flow-box > flowboxchild {
+    padding: 0;
+}
+
+.year-view-month-cell {
+    padding: 6px;
+    outline-color: var(--focus-ring-color);
+    outline-width: 1px;
+    outline-offset: -1px;
+}
+
 .year-view-days-grid-day-label-narrow {
     font-weight: 400;
-    font-size: 63%;
+    font-size: 57%;
 }
 
 .year-view-days-grid-day-label-medium {
